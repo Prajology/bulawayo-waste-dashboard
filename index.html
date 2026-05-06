@@ -272,10 +272,7 @@ footer{margin-left:220px;text-align:center;padding:1.5rem;font-size:10px;color:v
     <div class="sb-item" onclick="filterNeighbourhood('Nkulumane')"><span class="sb-icon">🏠</span>Nkulumane</div>
     <div class="sb-item" onclick="filterNeighbourhood('Cowdray Park')"><span class="sb-icon">🏠</span>Cowdray Park</div>
 
-    <div class="sb-section">Tools</div>
-    <div class="sb-item" onclick="showPage('setup',this)"><span class="sb-icon">⚙</span>Google Sheet Setup</div>
-    <div class="sb-item" onclick="showPage('setup',this)"><span class="sb-icon">⚡</span>Zapier Automation</div>
-    <div class="sb-item" onclick="exportData()"><span class="sb-icon">📥</span>Export CSV</div>
+
   </div>
   <div class="sb-footer">
     <div class="live-pill"><div class="live-dot"></div>Live · 2026</div>
@@ -289,10 +286,9 @@ footer{margin-left:220px;text-align:center;padding:1.5rem;font-size:10px;color:v
     <button class="tb-tab waste-tab active" onclick="showPage('waste',null)">🗑 Waste Dumping</button>
     <button class="tb-tab road-tab" onclick="showPage('roads',null)">🚧 Potholes & Roads</button>
     <button class="tb-tab road-tab" onclick="showPage('all',null)" style="border-color:var(--border);color:var(--muted)">📊 All Reports</button>
-    <button class="tb-tab road-tab" onclick="showPage('setup',null)" style="border-color:var(--border);color:var(--muted)">⚙ Setup Guide</button>
+
   </div>
   <div class="tb-right">
-    <button class="btn-main btn-export" onclick="exportData()">↓ Export CSV</button>
     <button class="btn-main btn-waste" id="topbtn" onclick="scrollForm()">+ Report Issue</button>
   </div>
 </div>
@@ -603,8 +599,8 @@ footer{margin-left:220px;text-align:center;padding:1.5rem;font-size:10px;color:v
   </div>
 </div>
 
-<!-- ════════════ SETUP PAGE ════════════ -->
-<div class="page" id="page-setup">
+<!-- ════════════ SETUP PAGE (hidden) ════════════ -->
+<div class="page" id="page-setup" style="display:none!important">
   <div class="sec-head"><div><div class="sec-title">Setup Guide — Go Live for Free</div><div class="sec-sub">Connect Google Sheets + Zapier so every report is saved and councillors are alerted automatically</div></div></div>
 
   <div class="guide-grid">
