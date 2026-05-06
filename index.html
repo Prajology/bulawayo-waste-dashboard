@@ -3,861 +3,1208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bulawayo Waste Watch — Live Dashboard 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Bulawayo City Watch — Live Infrastructure Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#080c10; --bg2:#0e1520; --bg3:#131d2b; --card:#111928;
-  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-  --text:#dce8f5; --muted:#5e7a96; --faint:#2a3d52;
-  --accent:#f5a623; --accent2:#ef5b5b; --green:#2ecc71;
-  --blue:#4da6ff; --teal:#22d3c8; --purple:#a78bfa;
-  --font-head:'Syne',sans-serif; --font-body:'Outfit',sans-serif;
+:root{
+  --bg:#05080d;--bg2:#090e16;--bg3:#0d1520;--card:#0d1520;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#e8f0f8;--muted:#4a6580;--faint:#1a2535;
+  --waste:#f5a623;--road:#e85d75;--green:#00d97e;
+  --blue:#3b9eff;--purple:#9b72f5;--teal:#00c9b1;
+  --font:'Space Grotesk',sans-serif;
+  --font-head:'Playfair Display',serif;
+  --mono:'JetBrains Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-/* NOISE TEXTURE */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;z-index:0;}
+/* SCANLINE EFFECT */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9999;}
 
-/* HEADER */
-header{background:rgba(8,12,16,.95);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
-.logo{display:flex;align-items:center;gap:12px;}
-.logo-mark{width:34px;height:34px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.logo-name{font-family:var(--font-head);font-size:1.05rem;font-weight:700;letter-spacing:.01em;}
-.logo-tag{font-size:10px;color:var(--muted);font-weight:400;letter-spacing:.06em;text-transform:uppercase;}
-.hdr-right{display:flex;align-items:center;gap:12px;}
-.live-pill{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:rgba(46,204,113,.1);padding:4px 11px;border-radius:20px;border:1px solid rgba(46,204,113,.22);}
-.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.4s ease-in-out infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.clock{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
-.btn-report{font-family:var(--font-body);font-size:12px;font-weight:600;background:var(--accent);color:#080c10;border:none;padding:8px 18px;border-radius:7px;cursor:pointer;letter-spacing:.03em;transition:all .2s;}
-.btn-report:hover{background:#f7b84b;transform:translateY(-1px);}
-.btn-report.pulse{animation:btnpulse .6s ease;}
-@keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:transform .3s;}
+.sb-logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border);}
+.sb-logo-mark{width:38px;height:38px;background:linear-gradient(135deg,var(--waste),#e8890a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:.6rem;box-shadow:0 4px 16px rgba(245,166,35,.25);}
+.sb-logo-name{font-family:var(--font-head);font-size:1rem;font-weight:700;line-height:1.2;}
+.sb-logo-tag{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.15rem;}
+.sb-nav{flex:1;padding:1rem 0;overflow-y:auto;}
+.sb-section{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.5rem 1.25rem .3rem;margin-top:.5rem;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:.6rem 1.25rem;font-size:13px;color:var(--muted);cursor:pointer;transition:all .18s;border-left:2px solid transparent;position:relative;}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.sb-item.active{color:var(--text);border-left-color:var(--waste);background:rgba(245,166,35,.06);}
+.sb-item.road-active{border-left-color:var(--road);background:rgba(232,93,117,.06);color:var(--text);}
+.sb-icon{font-size:.95rem;width:20px;text-align:center;}
+.sb-badge{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--faint);padding:2px 7px;border-radius:10px;color:var(--muted);}
+.sb-badge.hot{background:rgba(232,93,117,.15);color:var(--road);}
+.sb-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);}
+.live-pill{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:rgba(0,217,126,.08);padding:5px 10px;border-radius:20px;border:1px solid rgba(0,217,126,.18);width:fit-content;}
+.live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 1.4s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.clock-sb{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:.5rem;letter-spacing:.05em;}
 
-/* LAYOUT */
-.wrap{max-width:1440px;margin:0 auto;padding:1.5rem 2rem;position:relative;z-index:1;}
+/* MAIN */
+.main{margin-left:220px;min-height:100vh;}
 
-/* ALERT BANNER */
-.alert-banner{background:rgba(239,91,91,.1);border:1px solid rgba(239,91,91,.25);border-radius:10px;padding:.75rem 1.25rem;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;font-size:13px;animation:slideDown .4s ease;}
-@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-.alert-banner.hide{display:none;}
-.alert-x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:16px;line-height:1;}
-.alert-x:hover{color:var(--text);}
+/* TOPBAR */
+.topbar{background:rgba(5,8,13,.92);border-bottom:1px solid var(--border);padding:0 1.75rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.tb-tabs{display:flex;gap:4px;}
+.tb-tab{font-family:var(--font);font-size:12px;font-weight:600;padding:6px 16px;border-radius:6px;border:1px solid transparent;cursor:pointer;transition:all .18s;letter-spacing:.02em;}
+.tb-tab.waste-tab{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.25);color:var(--waste);}
+.tb-tab.road-tab{background:transparent;border-color:var(--border);color:var(--muted);}
+.tb-tab.road-tab.active{background:rgba(232,93,117,.12);border-color:rgba(232,93,117,.25);color:var(--road);}
+.tb-tab.waste-tab.active,.tb-tab.waste-tab:hover{background:var(--waste);color:#05080d;}
+.tb-tab.road-tab:hover{background:rgba(232,93,117,.08);color:var(--road);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.btn-main{font-family:var(--font);font-size:12px;font-weight:600;padding:7px 16px;border-radius:7px;border:none;cursor:pointer;letter-spacing:.03em;transition:all .2s;}
+.btn-waste{background:var(--waste);color:#05080d;}
+.btn-road{background:var(--road);color:#fff;}
+.btn-main:hover{transform:translateY(-1px);opacity:.9;}
+.btn-export{background:var(--faint);color:var(--muted);border:1px solid var(--border);}
+.btn-export:hover{color:var(--text);background:rgba(255,255,255,.06);}
 
-/* PAGE HEADING */
-.pg-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;}
-.pg-title{font-family:var(--font-head);font-size:1.8rem;font-weight:800;letter-spacing:-.01em;}
-.pg-sub{font-size:.85rem;color:var(--muted);margin-top:.2rem;}
-.year-tabs{display:flex;gap:6px;}
-.year-tab{font-family:var(--font-body);font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;}
-.year-tab.active{background:var(--accent);color:#080c10;border-color:var(--accent);}
+/* PAGE CONTENT */
+.page{padding:1.5rem 1.75rem;display:none;}
+.page.active{display:block;}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;}
+.sec-title{font-family:var(--font-head);font-size:1.6rem;font-weight:700;}
+.sec-sub{font-size:.8rem;color:var(--muted);margin-top:.2rem;}
+.year-tabs{display:flex;gap:5px;}
+.yr-btn{font-family:var(--font);font-size:11px;font-weight:600;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:5px;cursor:pointer;transition:all .18s;}
+.yr-btn.active{background:var(--waste);color:#05080d;border-color:var(--waste);}
+.yr-btn.road-yr.active{background:var(--road);color:#fff;border-color:var(--road);}
 
 /* STAT CARDS */
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:1.5rem;}
-@media(max-width:1000px){.stats{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr);}}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;position:relative;overflow:hidden;cursor:default;}
-.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
-.sc.c1::after{background:var(--accent);}
-.sc.c2::after{background:var(--accent2);}
-.sc.c3::after{background:var(--green);}
-.sc.c4::after{background:var(--blue);}
-.sc.c5::after{background:var(--teal);}
-.sc-icon{font-size:1.3rem;margin-bottom:.4rem;opacity:.7;}
-.sc-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.35rem;}
-.sc-val{font-family:var(--font-head);font-size:2rem;font-weight:800;line-height:1;color:var(--text);transition:all .3s;}
-.sc-val.flash{color:var(--accent);transform:scale(1.05);}
-.sc-delta{font-size:11px;margin-top:.3rem;}
-.up-delta{color:var(--accent2);}
-.dn-delta{color:var(--green);}
+@media(max-width:1200px){.stats{grid-template-columns:repeat(3,1fr);}}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;position:relative;overflow:hidden;transition:border-color .2s;}
+.sc:hover{border-color:var(--border2);}
+.sc-stripe{position:absolute;top:0;left:0;right:0;height:2px;}
+.sc-ico{font-size:1.2rem;margin-bottom:.4rem;}
+.sc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;margin-bottom:.35rem;}
+.sc-val{font-family:var(--font-head);font-size:2rem;line-height:1;color:var(--text);transition:all .25s;}
+.sc-val.flash{color:var(--waste);transform:scale(1.06);}
+.sc-val.road-flash{color:var(--road);}
+.sc-d{font-size:10px;margin-top:.3rem;}
+.up{color:var(--road);}
+.dn{color:var(--green);}
 
-/* MAIN LAYOUT */
-.main{display:grid;grid-template-columns:1fr 360px;gap:14px;margin-bottom:1.5rem;}
-@media(max-width:1100px){.main{grid-template-columns:1fr;}}
+/* GRID 2-COL */
+.g2{display:grid;grid-template-columns:1fr 380px;gap:14px;margin-bottom:1.5rem;}
+@media(max-width:1150px){.g2{grid-template-columns:1fr;}}
 
 /* CARD */
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-.ch{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.ct{font-family:var(--font-head);font-size:.85rem;font-weight:700;letter-spacing:.02em;}
+.ch{padding:.85rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);}
+.ct-val{font-size:11px;color:var(--muted);}
 .cb{padding:1.1rem;}
 
 /* MAP */
-.map-area{height:400px;background:#08101a;position:relative;overflow:hidden;}
+.map-wrap{height:420px;background:#04080f;position:relative;overflow:hidden;}
 .map-svg{width:100%;height:100%;}
 
-/* REPORT FORM PANEL */
-.form-scroll{overflow-y:auto;max-height:400px;}
-.form-scroll::-webkit-scrollbar{width:4px;}
-.form-scroll::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px;}
-.field{margin-bottom:.9rem;}
-.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.4rem;}
-.field input,.field select,.field textarea{width:100%;font-family:var(--font-body);font-size:13px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;outline:none;transition:border-color .2s;}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
-.field select option{background:var(--bg3);}
-.field textarea{resize:vertical;min-height:70px;}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.sev-buttons{display:flex;gap:8px;flex-wrap:wrap;}
-.sev-btn{font-family:var(--font-body);font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .2s;}
-.sev-btn.sel-critical{background:rgba(239,91,91,.2);border-color:var(--accent2);color:var(--accent2);}
-.sev-btn.sel-high{background:rgba(245,166,35,.2);border-color:var(--accent);color:var(--accent);}
-.sev-btn.sel-medium{background:rgba(77,166,255,.2);border-color:var(--blue);color:var(--blue);}
-.sev-btn.sel-low{background:rgba(46,204,113,.2);border-color:var(--green);color:var(--green);}
-.submit-btn{width:100%;font-family:var(--font-body);font-size:13px;font-weight:700;background:var(--accent);color:#080c10;border:none;padding:11px;border-radius:9px;cursor:pointer;letter-spacing:.04em;transition:all .2s;margin-top:.25rem;}
-.submit-btn:hover{background:#f7b84b;transform:translateY(-1px);}
-.submit-btn:active{transform:scale(.98);}
-.form-success{display:none;text-align:center;padding:1.5rem 1rem;animation:fadeIn .4s ease;}
-@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-.success-icon{font-size:2.5rem;margin-bottom:.75rem;}
-.success-msg{font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:.3rem;}
-.success-sub{font-size:12px;color:var(--muted);}
-.new-report-btn{font-family:var(--font-body);font-size:12px;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:7px;cursor:pointer;margin-top:1rem;transition:all .2s;}
-.new-report-btn:hover{border-color:var(--border2);}
+/* FORM PANEL */
+.form-body{padding:1rem;overflow-y:auto;max-height:420px;}
+.form-body::-webkit-scrollbar{width:3px;}
+.form-body::-webkit-scrollbar-thumb{background:var(--faint);}
+.field{margin-bottom:.85rem;}
+.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem;}
+.field input,.field select,.field textarea{width:100%;font-family:var(--font);font-size:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--waste);}
+.field select option{background:#0d1520;}
+.field textarea{resize:vertical;min-height:65px;line-height:1.5;}
+.road-focus .field input:focus,.road-focus .field select:focus,.road-focus .field textarea:focus{border-color:var(--road);}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sev-row{display:flex;gap:6px;flex-wrap:wrap;}
+.sev-btn{font-family:var(--font);font-size:10px;font-weight:600;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;transition:all .18s;}
+.sev-btn:hover{border-color:var(--border2);}
+.sev-btn.s-critical{background:rgba(232,93,117,.15);border-color:var(--road);color:var(--road);}
+.sev-btn.s-high{background:rgba(245,166,35,.15);border-color:var(--waste);color:var(--waste);}
+.sev-btn.s-medium{background:rgba(59,158,255,.15);border-color:var(--blue);color:var(--blue);}
+.sev-btn.s-low{background:rgba(0,217,126,.15);border-color:var(--green);color:var(--green);}
+.submit-btn{width:100%;font-family:var(--font);font-size:12px;font-weight:700;border:none;padding:11px;border-radius:9px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;transition:all .2s;margin-top:.25rem;}
+.waste-submit{background:linear-gradient(135deg,var(--waste),#e8890a);color:#05080d;}
+.road-submit{background:linear-gradient(135deg,var(--road),#c8384f);color:#fff;}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+.form-success{display:none;text-align:center;padding:2rem 1rem;}
+.form-success .s-ico{font-size:2.5rem;margin-bottom:.75rem;}
+.form-success .s-msg{font-family:var(--font-head);font-size:1.1rem;margin-bottom:.35rem;}
+.form-success .s-sub{font-size:11px;color:var(--muted);line-height:1.6;}
+.new-btn{font-family:var(--font);font-size:11px;background:var(--faint);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:6px;cursor:pointer;margin-top:1rem;transition:all .18s;}
+.new-btn:hover{color:var(--text);}
+.form-counter{font-family:var(--mono);font-size:10px;color:var(--green);}
 
-/* CHARTS ROW */
-.cr{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:14px;margin-bottom:1.5rem;}
-@media(max-width:1100px){.cr{grid-template-columns:1fr 1fr;}}
-@media(max-width:600px){.cr{grid-template-columns:1fr;}}
+/* CHARTS 3-COL */
+.g3{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px;margin-bottom:1.5rem;}
+@media(max-width:1100px){.g3{grid-template-columns:1fr 1fr;}}
 
 /* WASTE BARS */
-.wbars{display:flex;flex-direction:column;gap:11px;}
-.wbar-row{display:flex;flex-direction:column;gap:4px;}
-.wbar-lbl{display:flex;justify-content:space-between;font-size:12px;}
-.wbar-track{height:7px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;}
-.wbar-fill{height:100%;border-radius:4px;transition:width .9s cubic-bezier(.4,0,.2,1);}
-
-/* TREND CANVAS */
-#trend-canvas{display:block;}
+.wbars{display:flex;flex-direction:column;gap:10px;}
+.wb-row{display:flex;flex-direction:column;gap:3px;}
+.wb-lbl{display:flex;justify-content:space-between;font-size:11px;}
+.wb-lbl span:last-child{color:var(--muted);}
+.wb-track{height:6px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden;}
+.wb-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1);}
 
 /* DONUT */
-.donut-wrap{display:flex;align-items:center;gap:16px;}
-.dlegend{display:flex;flex-direction:column;gap:9px;flex:1;}
-.dleg-item{display:flex;align-items:center;gap:8px;font-size:12px;}
-.dleg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.donut-wrap{display:flex;align-items:center;gap:14px;}
+.dleg{display:flex;flex-direction:column;gap:8px;flex:1;}
+.dleg-item{display:flex;align-items:center;gap:7px;font-size:11px;}
+.dleg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
-/* INCIDENTS FEED */
-.feed{display:flex;flex-direction:column;}
-.feed-item{display:flex;align-items:flex-start;gap:11px;padding:.85rem 1.25rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative;}
-.feed-item:last-child{border-bottom:none;}
-.feed-item:hover{background:rgba(255,255,255,.025);}
-.feed-item.new-item{animation:newrow .6s ease;}
-@keyframes newrow{from{background:rgba(245,166,35,.15)}to{background:transparent}}
-.fi-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+/* FEED */
+.feed{overflow-y:auto;max-height:340px;}
+.feed::-webkit-scrollbar{width:3px;}
+.feed::-webkit-scrollbar-thumb{background:var(--faint);}
+.fi{display:flex;align-items:flex-start;gap:10px;padding:.8rem 1.2rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.fi:last-child{border-bottom:none;}
+.fi:hover{background:rgba(255,255,255,.02);}
+.fi.new-fi{animation:newrow .8s ease;}
+@keyframes newrow{0%{background:rgba(245,166,35,.12)}100%{background:transparent}}
+.fi.road-new{animation:roadrow .8s ease;}
+@keyframes roadrow{0%{background:rgba(232,93,117,.12)}100%{background:transparent}}
+.fi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
 .fi-info{flex:1;min-width:0;}
-.fi-loc{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.fi-meta{font-size:11px;color:var(--muted);margin-top:2px;}
-.fi-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0;border:1px solid;}
-.bc{border-color:rgba(239,91,91,.4);background:rgba(239,91,91,.12);color:var(--accent2);}
-.bh{border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.12);color:var(--accent);}
-.bm{border-color:rgba(77,166,255,.4);background:rgba(77,166,255,.12);color:var(--blue);}
-.br{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.12);color:var(--green);}
+.fi-loc{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fi-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.fi-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;flex-shrink:0;border:1px solid;}
+.fi-type{font-size:9px;padding:2px 6px;border-radius:4px;margin-right:4px;flex-shrink:0;}
+.ft-waste{background:rgba(245,166,35,.1);color:var(--waste);}
+.ft-road{background:rgba(232,93,117,.1);color:var(--road);}
 
 /* WARD TABLE */
-.wt{width:100%;border-collapse:collapse;font-size:13px;}
-.wt th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding:.55rem .9rem;border-bottom:1px solid var(--border);}
-.wt td{padding:.75rem .9rem;border-bottom:1px solid rgba(255,255,255,.035);vertical-align:middle;}
+.wt-wrap{overflow-x:auto;}
+.wt{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
+.wt th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;padding:.5rem .9rem;border-bottom:1px solid var(--border);}
+.wt td{padding:.7rem .9rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
 .wt tr:last-child td{border-bottom:none;}
-.wt tr:hover td{background:rgba(255,255,255,.025);}
-.mbar{width:70px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;}
-.mbar-f{height:100%;border-radius:3px;background:var(--accent);}
-.rnk{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.wt tr:hover td{background:rgba(255,255,255,.02);}
+.mbar{width:60px;height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;}
+.mbar-f{height:100%;border-radius:3px;}
+.rnk{width:19px;height:19px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
 
 /* MODAL */
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
 .modal-ov.open{display:flex;}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:1.75rem;width:440px;max-width:94vw;animation:mopen .25s ease;}
-@keyframes mopen{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
-.mt{font-family:var(--font-head);font-size:1.15rem;font-weight:700;}
-.mx{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:1.75rem;width:460px;max-width:94vw;animation:mopen .22s ease;}
+@keyframes mopen{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.mh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:.75rem;}
+.mt{font-family:var(--font-head);font-size:1.15rem;font-weight:700;line-height:1.3;}
+.mx{background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;}
 .mx:hover{background:rgba(255,255,255,.07);color:var(--text);}
-.mr{display:flex;justify-content:space-between;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:13px;}
+.mr{display:flex;justify-content:space-between;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid var(--border);font-size:12px;gap:.75rem;}
 .mr:last-of-type{border-bottom:none;}
-.mk{color:var(--muted);font-size:12px;}
-.mv{color:var(--text);font-weight:500;text-align:right;max-width:60%;}
-.esc-btn{width:100%;margin-top:1.25rem;font-family:var(--font-body);font-size:13px;font-weight:700;background:var(--accent2);color:#fff;border:none;padding:11px;border-radius:9px;cursor:pointer;letter-spacing:.04em;transition:all .2s;}
+.mk{color:var(--muted);flex-shrink:0;}
+.mv{color:var(--text);font-weight:500;text-align:right;}
+.esc-btn{width:100%;margin-top:1.25rem;font-family:var(--font);font-size:12px;font-weight:700;padding:10px;border-radius:8px;border:none;cursor:pointer;letter-spacing:.04em;transition:all .18s;}
+.esc-waste{background:linear-gradient(135deg,var(--waste),#e8890a);color:#05080d;}
+.esc-road{background:linear-gradient(135deg,var(--road),#c8384f);color:#fff;}
 .esc-btn:hover{opacity:.88;}
 
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px 18px;font-size:13px;z-index:500;display:flex;align-items:center;gap:10px;transform:translateY(20px);opacity:0;transition:all .35s;pointer-events:none;max-width:320px;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:12px;z-index:600;display:flex;align-items:center;gap:9px;transform:translateY(16px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.4);}
 .toast.show{transform:translateY(0);opacity:1;}
-.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.t-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
 /* TOOLTIP */
-.tip{position:fixed;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;z-index:400;opacity:0;transition:opacity .15s;min-width:150px;}
+.tip{position:fixed;background:rgba(9,14,22,.97);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;font-size:11px;pointer-events:none;z-index:400;opacity:0;transition:opacity .12s;min-width:155px;box-shadow:0 4px 20px rgba(0,0,0,.4);}
 .tip.show{opacity:1;}
-.tip-title{font-weight:600;color:var(--text);margin-bottom:3px;}
-.tip-row{color:var(--muted);font-size:11px;line-height:1.6;}
+.tip-t{font-weight:600;color:var(--text);margin-bottom:3px;}
+.tip-r{color:var(--muted);font-size:10px;line-height:1.6;}
 
-footer{text-align:center;padding:2rem 0 1.5rem;font-size:11px;color:var(--faint);position:relative;z-index:1;}
+/* GOOGLE SHEET GUIDE */
+.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem;}
+@media(max-width:900px){.guide-grid{grid-template-columns:1fr;}}
+.guide-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+.guide-step{display:flex;gap:14px;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);}
+.guide-step:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.gs-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:var(--mono);}
+.gs-body{}
+.gs-title{font-size:13px;font-weight:600;margin-bottom:.3rem;}
+.gs-desc{font-size:11px;color:var(--muted);line-height:1.65;}
+.gs-code{font-family:var(--mono);font-size:10px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-top:.5rem;color:var(--teal);white-space:pre-wrap;line-height:1.7;}
+.guide-title{font-family:var(--font-head);font-size:1.1rem;margin-bottom:1.1rem;display:flex;align-items:center;gap:.6rem;}
+.copy-btn{font-family:var(--font);font-size:10px;background:var(--faint);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .18s;}
+.copy-btn:hover{color:var(--text);border-color:var(--border2);}
+.zapier-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:.75rem 0;}
+.zap-node{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:.5rem .9rem;font-size:11px;display:flex;align-items:center;gap:6px;}
+.zap-arrow{color:var(--muted);font-size:.8rem;}
+
+footer{margin-left:220px;text-align:center;padding:1.5rem;font-size:10px;color:var(--faint);border-top:1px solid var(--border);}
 </style>
 </head>
 <body>
 
-<!-- TOOLTIP -->
-<div class="tip" id="tip">
-  <div class="tip-title" id="tip-t"></div>
-  <div class="tip-row" id="tip-r1"></div>
-  <div class="tip-row" id="tip-r2"></div>
-</div>
+<div class="tip" id="tip"><div class="tip-t" id="tip-t"></div><div class="tip-r" id="tip-r1"></div><div class="tip-r" id="tip-r2"></div></div>
+<div class="toast" id="toast"><div class="t-dot" id="t-dot"></div><div id="t-msg"></div></div>
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="toast-dot" id="toast-dot"></div>
-  <div id="toast-msg"></div>
-</div>
-
-<!-- DETAIL MODAL -->
 <div class="modal-ov" id="modal-ov" onclick="closeMod(event)">
   <div class="modal">
-    <div class="mh">
-      <span class="mt" id="mod-title">Incident Details</span>
-      <button class="mx" onclick="document.getElementById('modal-ov').classList.remove('open')">✕</button>
-    </div>
+    <div class="mh"><span class="mt" id="mod-title">Details</span><button class="mx" onclick="document.getElementById('modal-ov').classList.remove('open')">✕</button></div>
     <div id="mod-body"></div>
   </div>
 </div>
 
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <div class="logo-mark">🗺</div>
-    <div>
-      <div class="logo-name">Bulawayo Waste Watch</div>
-      <div class="logo-tag">Illegal Dumping · Live Intelligence</div>
-    </div>
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">🏙</div>
+    <div class="sb-logo-name">Bulawayo<br>City Watch</div>
+    <div class="sb-logo-tag">Infrastructure Monitor</div>
   </div>
-  <div class="hdr-right">
-    <div class="live-pill"><div class="live-dot"></div>Live</div>
-    <div class="clock" id="clock"></div>
-    <button class="btn-report" onclick="scrollToForm()" id="report-btn">+ Report Dumping</button>
+  <div class="sb-nav">
+    <div class="sb-section">Reports</div>
+    <div class="sb-item active" onclick="showPage('waste',this)"><span class="sb-icon">🗑</span>Waste Dumping<span class="sb-badge" id="sb-waste-count">1,247</span></div>
+    <div class="sb-item" onclick="showPage('roads',this)"><span class="sb-icon">🚧</span>Roads & Potholes<span class="sb-badge hot" id="sb-road-count">684</span></div>
+    <div class="sb-item" onclick="showPage('all',this)"><span class="sb-icon">📊</span>All Incidents</div>
+
+    <div class="sb-section">Areas</div>
+    <div class="sb-item" onclick="filterNeighbourhood('CBD')"><span class="sb-icon">🏢</span>Bulawayo CBD</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Hillside')"><span class="sb-icon">🌿</span>Hillside</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Burnside')"><span class="sb-icon">🏘</span>Burnside</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Makokoba')"><span class="sb-icon">🏠</span>Makokoba</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Luveve')"><span class="sb-icon">🏠</span>Luveve</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Pumula')"><span class="sb-icon">🏠</span>Pumula</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Nkulumane')"><span class="sb-icon">🏠</span>Nkulumane</div>
+    <div class="sb-item" onclick="filterNeighbourhood('Cowdray Park')"><span class="sb-icon">🏠</span>Cowdray Park</div>
+
+    <div class="sb-section">Tools</div>
+    <div class="sb-item" onclick="showPage('setup',this)"><span class="sb-icon">⚙</span>Google Sheet Setup</div>
+    <div class="sb-item" onclick="showPage('setup',this)"><span class="sb-icon">⚡</span>Zapier Automation</div>
+    <div class="sb-item" onclick="exportData()"><span class="sb-icon">📥</span>Export CSV</div>
   </div>
-</header>
-
-<div class="wrap">
-
-  <!-- ALERT BANNER -->
-  <div class="alert-banner" id="alert-banner">
-    <span style="color:var(--accent2);font-size:1rem;">⚠</span>
-    <span><strong>Critical alert:</strong> 3 new illegal dumping sites reported in Pumula & Cowdray Park in the last 2 hours.</span>
-    <span class="alert-x" onclick="document.getElementById('alert-banner').classList.add('hide')">✕</span>
+  <div class="sb-footer">
+    <div class="live-pill"><div class="live-dot"></div>Live · 2026</div>
+    <div class="clock-sb" id="clock"></div>
   </div>
+</nav>
 
-  <!-- PAGE HEAD -->
-  <div class="pg-head">
-    <div>
-      <div class="pg-title">Waste Dumping Dashboard</div>
-      <div class="pg-sub">Bulawayo Metropolitan Province · All Wards · Data from 2024–2026</div>
-    </div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-tabs">
+    <button class="tb-tab waste-tab active" onclick="showPage('waste',null)">🗑 Waste Dumping</button>
+    <button class="tb-tab road-tab" onclick="showPage('roads',null)">🚧 Potholes & Roads</button>
+    <button class="tb-tab road-tab" onclick="showPage('all',null)" style="border-color:var(--border);color:var(--muted)">📊 All Reports</button>
+    <button class="tb-tab road-tab" onclick="showPage('setup',null)" style="border-color:var(--border);color:var(--muted)">⚙ Setup Guide</button>
+  </div>
+  <div class="tb-right">
+    <button class="btn-main btn-export" onclick="exportData()">↓ Export CSV</button>
+    <button class="btn-main btn-waste" id="topbtn" onclick="scrollForm()">+ Report Issue</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ════════════ WASTE PAGE ════════════ -->
+<div class="page active" id="page-waste">
+  <div class="sec-head">
+    <div><div class="sec-title">Illegal Waste Dumping</div><div class="sec-sub">All Bulawayo Neighbourhoods · Live Community Reports · 2026</div></div>
     <div class="year-tabs">
-      <button class="year-tab" onclick="setYear(2024,this)">2024</button>
-      <button class="year-tab" onclick="setYear(2025,this)">2025</button>
-      <button class="year-tab active" onclick="setYear(2026,this)">2026</button>
+      <button class="yr-btn" onclick="setYear(2024,this,'waste')">2024</button>
+      <button class="yr-btn" onclick="setYear(2025,this,'waste')">2025</button>
+      <button class="yr-btn active" onclick="setYear(2026,this,'waste')">2026</button>
     </div>
   </div>
-
-  <!-- STAT CARDS -->
-  <div class="stats">
-    <div class="sc c1"><div class="sc-icon">🗑</div><div class="sc-label">Total Reports</div><div class="sc-val" id="s-total">1,247</div><div class="sc-delta up-delta">▲ 47% vs 2025</div></div>
-    <div class="sc c2"><div class="sc-icon">🔴</div><div class="sc-label">Critical Sites</div><div class="sc-val" id="s-crit">52</div><div class="sc-delta up-delta">▲ 18 new this month</div></div>
-    <div class="sc c3"><div class="sc-icon">✅</div><div class="sc-label">Resolved</div><div class="sc-val" id="s-res">893</div><div class="sc-delta dn-delta">▼ 71% rate</div></div>
-    <div class="sc c4"><div class="sc-icon">⏱</div><div class="sc-label">Avg. Response</div><div class="sc-val" id="s-time">3.8<span style="font-size:.9rem">d</span></div><div class="sc-delta dn-delta">▼ 0.4d faster</div></div>
-    <div class="sc c5"><div class="sc-icon">👥</div><div class="sc-label">Community Reports</div><div class="sc-val" id="s-comm">384</div><div class="sc-delta up-delta">▲ Live submissions</div></div>
+  <div class="stats" id="waste-stats">
+    <div class="sc"><div class="sc-stripe" style="background:var(--waste)"></div><div class="sc-ico">🗑</div><div class="sc-lbl">Total Reports</div><div class="sc-val" id="ws-total">1,247</div><div class="sc-d up">▲ 47% vs 2025</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--road)"></div><div class="sc-ico">🔴</div><div class="sc-lbl">Critical Sites</div><div class="sc-val" id="ws-crit">52</div><div class="sc-d up">▲ 18 new sites</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--green)"></div><div class="sc-ico">✅</div><div class="sc-lbl">Resolved</div><div class="sc-val" id="ws-res">893</div><div class="sc-d dn">▼ 71% rate</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--blue)"></div><div class="sc-ico">⏱</div><div class="sc-lbl">Avg Response</div><div class="sc-val" id="ws-time">3.8<span style="font-size:.9rem">d</span></div><div class="sc-d dn">▼ faster</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--teal)"></div><div class="sc-ico">👥</div><div class="sc-lbl">Community Reports</div><div class="sc-val" id="ws-comm">384</div><div class="sc-d up">▲ Live</div></div>
   </div>
-
-  <!-- MAP + REPORT FORM -->
-  <div class="main">
-
-    <!-- MAP CARD -->
+  <div class="g2">
     <div class="card">
-      <div class="ch">
-        <span class="ct">📍 Live Hotspot Map — Bulawayo 2026</span>
-        <span style="font-size:11px;color:var(--muted)" id="map-count"></span>
-      </div>
-      <div class="map-area">
-        <svg class="map-svg" id="mapsvg" viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="35" height="35" patternUnits="userSpaceOnUse">
-              <path d="M35 0L0 0 0 35" fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
-            </pattern>
-            <radialGradient id="glow-r" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#ef5b5b" stop-opacity="0.35"/>
-              <stop offset="100%" stop-color="#ef5b5b" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="glow-o" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#f5a623" stop-opacity="0.3"/>
-              <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <rect width="700" height="400" fill="#08101a"/>
-          <rect width="700" height="400" fill="url(#grid)"/>
-          <!-- Zone labels -->
-          <g opacity=".5">
-            <rect x="155" y="115" width="115" height="78" rx="7" fill="rgba(245,166,35,.05)" stroke="rgba(245,166,35,.18)" stroke-width="1"/>
-            <text x="212" y="159" text-anchor="middle" font-size="9" fill="rgba(245,166,35,.55)" font-family="Outfit">MAKOKOBA</text>
-            <rect x="70" y="195" width="122" height="88" rx="7" fill="rgba(239,91,91,.05)" stroke="rgba(239,91,91,.18)" stroke-width="1"/>
-            <text x="131" y="243" text-anchor="middle" font-size="9" fill="rgba(239,91,91,.55)" font-family="Outfit">LUVEVE</text>
-            <rect x="158" y="248" width="112" height="80" rx="7" fill="rgba(46,204,113,.05)" stroke="rgba(46,204,113,.18)" stroke-width="1"/>
-            <text x="214" y="292" text-anchor="middle" font-size="9" fill="rgba(46,204,113,.55)" font-family="Outfit">PUMULA</text>
-            <rect x="270" y="130" width="148" height="105" rx="7" fill="rgba(77,166,255,.05)" stroke="rgba(77,166,255,.18)" stroke-width="1"/>
-            <text x="344" y="187" text-anchor="middle" font-size="9" fill="rgba(77,166,255,.55)" font-family="Outfit">CITY CENTRE</text>
-            <rect x="415" y="95" width="124" height="90" rx="7" fill="rgba(167,139,250,.05)" stroke="rgba(167,139,250,.18)" stroke-width="1"/>
-            <text x="477" y="144" text-anchor="middle" font-size="9" fill="rgba(167,139,250,.55)" font-family="Outfit">NKULUMANE</text>
-            <rect x="415" y="200" width="115" height="90" rx="7" fill="rgba(34,211,200,.05)" stroke="rgba(34,211,200,.18)" stroke-width="1"/>
-            <text x="472" y="248" text-anchor="middle" font-size="9" fill="rgba(34,211,200,.55)" font-family="Outfit">MPOPOMA</text>
-            <rect x="270" y="305" width="138" height="72" rx="7" fill="rgba(245,166,35,.05)" stroke="rgba(245,166,35,.18)" stroke-width="1"/>
-            <text x="339" y="344" text-anchor="middle" font-size="9" fill="rgba(245,166,35,.55)" font-family="Outfit">COWDRAY PARK</text>
-          </g>
-          <!-- Roads -->
-          <g stroke="rgba(255,255,255,.06)" stroke-width="1.5" fill="none">
-            <line x1="0" y1="195" x2="700" y2="195"/>
-            <line x1="345" y1="0" x2="345" y2="400"/>
-            <line x1="0" y1="290" x2="700" y2="290"/>
-            <line x1="195" y1="0" x2="195" y2="400"/>
-            <line x1="500" y1="0" x2="500" y2="400"/>
-          </g>
-          <g id="heatspots"></g>
-          <g id="pins"></g>
-          <!-- Legend -->
-          <g transform="translate(12,12)">
-            <rect width="116" height="78" rx="8" fill="rgba(8,12,16,.85)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
-            <circle cx="15" cy="19" r="5" fill="#ef5b5b" opacity=".9"/>
-            <text x="26" y="23" font-size="10" fill="#5e7a96" font-family="Outfit">Critical</text>
-            <circle cx="15" cy="39" r="5" fill="#f5a623" opacity=".9"/>
-            <text x="26" y="43" font-size="10" fill="#5e7a96" font-family="Outfit">High</text>
-            <circle cx="15" cy="59" r="5" fill="#4da6ff" opacity=".9"/>
-            <text x="26" y="63" font-size="10" fill="#5e7a96" font-family="Outfit">Medium</text>
-          </g>
-        </svg>
-      </div>
+      <div class="ch"><span class="ct">📍 Waste Hotspot Map — All Neighbourhoods</span><span class="ct-val" id="waste-map-count"></span></div>
+      <div class="map-wrap"><svg class="map-svg" id="waste-map" viewBox="0 0 740 420" xmlns="http://www.w3.org/2000/svg">
+        <defs><pattern id="wgrid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0L0 0 0 32" fill="none" stroke="rgba(255,255,255,.03)" stroke-width="1"/></pattern></defs>
+        <rect width="740" height="420" fill="#04080f"/><rect width="740" height="420" fill="url(#wgrid)"/>
+        <g stroke="rgba(255,255,255,.05)" stroke-width="1" fill="none">
+          <line x1="0" y1="200" x2="740" y2="200"/><line x1="370" y1="0" x2="370" y2="420"/>
+          <line x1="0" y1="300" x2="740" y2="300"/><line x1="200" y1="0" x2="200" y2="420"/>
+          <line x1="530" y1="0" x2="530" y2="420"/><line x1="0" y1="120" x2="740" y2="120"/>
+        </g>
+        <!-- NEIGHBOURHOOD ZONES -->
+        <g opacity=".55">
+          <rect x="310" y="155" width="120" height="85" rx="6" fill="rgba(59,158,255,.04)" stroke="rgba(59,158,255,.2)" stroke-width="1"/>
+          <text x="370" y="200" text-anchor="middle" font-size="8" fill="rgba(59,158,255,.6)" font-family="Space Grotesk">CBD</text>
+          <rect x="440" y="60" width="100" height="75" rx="6" fill="rgba(155,114,245,.04)" stroke="rgba(155,114,245,.2)" stroke-width="1"/>
+          <text x="490" y="100" text-anchor="middle" font-size="8" fill="rgba(155,114,245,.6)" font-family="Space Grotesk">HILLSIDE</text>
+          <rect x="550" y="55" width="95" height="80" rx="6" fill="rgba(0,201,177,.04)" stroke="rgba(0,201,177,.2)" stroke-width="1"/>
+          <text x="597" y="98" text-anchor="middle" font-size="8" fill="rgba(0,201,177,.6)" font-family="Space Grotesk">BURNSIDE</text>
+          <rect x="130" y="100" width="105" height="75" rx="6" fill="rgba(245,166,35,.04)" stroke="rgba(245,166,35,.2)" stroke-width="1"/>
+          <text x="182" y="142" text-anchor="middle" font-size="8" fill="rgba(245,166,35,.6)" font-family="Space Grotesk">MAKOKOBA</text>
+          <rect x="55" y="185" width="110" height="85" rx="6" fill="rgba(232,93,117,.04)" stroke="rgba(232,93,117,.2)" stroke-width="1"/>
+          <text x="110" y="230" text-anchor="middle" font-size="8" fill="rgba(232,93,117,.6)" font-family="Space Grotesk">LUVEVE</text>
+          <rect x="130" y="245" width="105" height="80" rx="6" fill="rgba(0,217,126,.04)" stroke="rgba(0,217,126,.2)" stroke-width="1"/>
+          <text x="182" y="288" text-anchor="middle" font-size="8" fill="rgba(0,217,126,.6)" font-family="Space Grotesk">PUMULA</text>
+          <rect x="440" y="155" width="110" height="80" rx="6" fill="rgba(155,114,245,.04)" stroke="rgba(155,114,245,.15)" stroke-width="1"/>
+          <text x="495" y="198" text-anchor="middle" font-size="8" fill="rgba(155,114,245,.6)" font-family="Space Grotesk">NKULUMANE</text>
+          <rect x="440" y="245" width="105" height="78" rx="6" fill="rgba(0,201,177,.04)" stroke="rgba(0,201,177,.15)" stroke-width="1"/>
+          <text x="492" y="287" text-anchor="middle" font-size="8" fill="rgba(0,201,177,.6)" font-family="Space Grotesk">MPOPOMA</text>
+          <rect x="285" y="310" width="140" height="75" rx="6" fill="rgba(245,166,35,.04)" stroke="rgba(245,166,35,.15)" stroke-width="1"/>
+          <text x="355" y="350" text-anchor="middle" font-size="8" fill="rgba(245,166,35,.6)" font-family="Space Grotesk">COWDRAY PARK</text>
+          <rect x="555" y="145" width="100" height="75" rx="6" fill="rgba(59,158,255,.04)" stroke="rgba(59,158,255,.15)" stroke-width="1"/>
+          <text x="605" y="185" text-anchor="middle" font-size="8" fill="rgba(59,158,255,.6)" font-family="Space Grotesk">SUBURBS</text>
+          <rect x="555" y="230" width="100" height="75" rx="6" fill="rgba(232,93,117,.04)" stroke="rgba(232,93,117,.15)" stroke-width="1"/>
+          <text x="605" y="270" text-anchor="middle" font-size="8" fill="rgba(232,93,117,.6)" font-family="Space Grotesk">EMAKHANDENI</text>
+          <rect x="310" y="65" width="120" height="78" rx="6" fill="rgba(0,201,177,.04)" stroke="rgba(0,201,177,.15)" stroke-width="1"/>
+          <text x="370" y="107" text-anchor="middle" font-size="8" fill="rgba(0,201,177,.6)" font-family="Space Grotesk">PADDONHURST</text>
+          <rect x="130" y="330" width="140" height="70" rx="6" fill="rgba(155,114,245,.04)" stroke="rgba(155,114,245,.15)" stroke-width="1"/>
+          <text x="200" y="368" text-anchor="middle" font-size="8" fill="rgba(155,114,245,.6)" font-family="Space Grotesk">ENTUMBANE</text>
+          <rect x="55" y="300" width="100" height="70" rx="6" fill="rgba(0,217,126,.04)" stroke="rgba(0,217,126,.15)" stroke-width="1"/>
+          <text x="105" y="338" text-anchor="middle" font-size="8" fill="rgba(0,217,126,.6)" font-family="Space Grotesk">TSHABALALA</text>
+        </g>
+        <g id="waste-heat"></g><g id="waste-pins"></g>
+        <!-- LEGEND -->
+        <g transform="translate(10,10)">
+          <rect width="110" height="72" rx="7" fill="rgba(4,8,15,.88)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+          <circle cx="14" cy="18" r="5" fill="#ef5b5b" opacity=".9"/><text x="24" y="22" font-size="9" fill="#4a6580" font-family="Space Grotesk">Critical</text>
+          <circle cx="14" cy="36" r="5" fill="#f5a623" opacity=".9"/><text x="24" y="40" font-size="9" fill="#4a6580" font-family="Space Grotesk">High</text>
+          <circle cx="14" cy="54" r="5" fill="#3b9eff" opacity=".9"/><text x="24" y="58" font-size="9" fill="#4a6580" font-family="Space Grotesk">Medium / Resolved</text>
+        </g>
+      </svg></div>
     </div>
 
-    <!-- REPORT FORM -->
-    <div class="card" id="report-form-card">
-      <div class="ch">
-        <span class="ct">📝 Report Illegal Dumping</span>
-        <span style="font-size:11px;color:var(--green)" id="form-counter">384 submitted today</span>
-      </div>
-      <div style="padding:1.1rem;" id="form-wrap">
-        <div id="form-success" class="form-success">
-          <div class="success-icon">✅</div>
-          <div class="success-msg">Report Submitted!</div>
-          <div class="success-sub">Your report has been added to the live dashboard and ward councillors have been notified.</div>
-          <button class="new-report-btn" onclick="resetForm()">+ Submit another report</button>
+    <!-- WASTE REPORT FORM -->
+    <div class="card" id="waste-form-card">
+      <div class="ch"><span class="ct">📝 Report Waste Dumping</span><span class="form-counter" id="waste-form-ctr">384 today</span></div>
+      <div class="form-body">
+        <div id="waste-form-success" class="form-success">
+          <div class="s-ico">✅</div><div class="s-msg">Report Submitted!</div>
+          <div class="s-sub">Added to live dashboard.<br>Ward councillor & BCC notified automatically via Zapier.</div>
+          <button class="new-btn" onclick="resetWasteForm()">+ Another report</button>
         </div>
-        <div id="form-fields">
-          <div class="field">
-            <label>Your Name <span style="color:var(--muted)">(optional)</span></label>
-            <input type="text" id="f-name" placeholder="e.g. Thembi Moyo">
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label>Ward / Area *</label>
-              <select id="f-ward">
-                <option value="">Select ward...</option>
-                <option value="Ward 1 – Makokoba">Ward 1 – Makokoba</option>
-                <option value="Ward 2 – Luveve">Ward 2 – Luveve</option>
-                <option value="Ward 3 – Pumula">Ward 3 – Pumula</option>
-                <option value="Ward 4 – Nkulumane">Ward 4 – Nkulumane</option>
-                <option value="Ward 5 – Mpopoma">Ward 5 – Mpopoma</option>
-                <option value="Ward 6 – Cowdray Park">Ward 6 – Cowdray Park</option>
-                <option value="City Centre">City Centre</option>
-                <option value="Other">Other</option>
+        <div id="waste-form-fields">
+          <div class="field"><label>Your Name (optional)</label><input type="text" id="wf-name" placeholder="e.g. Sibo Ncube"></div>
+          <div class="f2">
+            <div class="field"><label>Neighbourhood *</label>
+              <select id="wf-area">
+                <option value="">Select area...</option>
+                <optgroup label="City Centre">
+                  <option>Bulawayo CBD</option><option>City Centre North</option>
+                </optgroup>
+                <optgroup label="Northern Suburbs">
+                  <option>Hillside</option><option>Burnside</option><option>Suburbs</option>
+                  <option>Paddonhurst</option><option>Waterford</option><option>Famona</option>
+                  <option>Northend</option><option>Montrose</option><option>Matsheumhlope</option>
+                  <option>Kumalo</option><option>Selbourne Park</option><option>Newton West</option>
+                </optgroup>
+                <optgroup label="Western Townships">
+                  <option>Makokoba</option><option>Mzilikazi</option><option>Mpopoma</option>
+                  <option>Iminyela</option><option>Njube</option><option>Lobengula</option>
+                  <option>Luveve</option><option>Nketa</option><option>Nkulumane</option>
+                  <option>Emganwini</option>
+                </optgroup>
+                <optgroup label="Southern Townships">
+                  <option>Pumula</option><option>Entumbane</option><option>Tshabalala</option>
+                  <option>Emakhandeni</option><option>Cowdray Park</option><option>Magwegwe</option>
+                  <option>Sunnyside</option><option>Sizinda</option><option>Mahatshula</option>
+                </optgroup>
+                <optgroup label="Eastern Areas">
+                  <option>Woodville</option><option>Barham Green</option><option>Douglasdale</option>
+                  <option>Hyde Park</option><option>Other</option>
+                </optgroup>
               </select>
             </div>
-            <div class="field">
-              <label>Street / Landmark *</label>
-              <input type="text" id="f-street" placeholder="e.g. 5th Avenue">
-            </div>
+            <div class="field"><label>Street / Landmark *</label><input type="text" id="wf-street" placeholder="e.g. 5th Ave / Near school"></div>
           </div>
-          <div class="field">
-            <label>Waste Type *</label>
-            <select id="f-type">
+          <div class="field"><label>Waste Type *</label>
+            <select id="wf-type">
               <option value="">Select type...</option>
-              <option>Mixed Waste</option>
-              <option>Household Waste</option>
-              <option>Construction Debris</option>
-              <option>Plastic Waste</option>
-              <option>Organic Waste</option>
-              <option>Chemical / Hazardous</option>
-              <option>Medical Waste</option>
-              <option>Electronic Waste</option>
+              <option>Mixed Waste</option><option>Household Waste</option>
+              <option>Construction Debris</option><option>Plastic Waste</option>
+              <option>Organic / Food Waste</option><option>Chemical / Hazardous</option>
+              <option>Medical Waste</option><option>Electronic Waste</option><option>Tyres / Auto Waste</option>
             </select>
           </div>
-          <div class="field">
-            <label>Severity Level *</label>
-            <div class="sev-buttons">
-              <button class="sev-btn" onclick="setSev('critical',this)">🔴 Critical</button>
-              <button class="sev-btn" onclick="setSev('high',this)">🟠 High</button>
-              <button class="sev-btn" onclick="setSev('medium',this)">🔵 Medium</button>
-              <button class="sev-btn" onclick="setSev('low',this)">🟢 Low</button>
+          <div class="field"><label>Severity *</label>
+            <div class="sev-row">
+              <button class="sev-btn" onclick="setSev('waste','critical',this)">🔴 Critical</button>
+              <button class="sev-btn" onclick="setSev('waste','high',this)">🟠 High</button>
+              <button class="sev-btn" onclick="setSev('waste','medium',this)">🔵 Medium</button>
+              <button class="sev-btn" onclick="setSev('waste','low',this)">🟢 Low</button>
             </div>
-            <input type="hidden" id="f-sev" value="">
+            <input type="hidden" id="wf-sev" value="">
           </div>
-          <div class="field">
-            <label>Description</label>
-            <textarea id="f-desc" placeholder="Describe what you see — size, smell, any health risks..."></textarea>
-          </div>
-          <div class="field">
-            <label>Your Phone <span style="color:var(--muted)">(for follow-up)</span></label>
-            <input type="tel" id="f-phone" placeholder="+263 7X XXX XXXX">
-          </div>
-          <button class="submit-btn" onclick="submitReport()">🚨 Submit Report — Notify Council</button>
+          <div class="field"><label>Description</label><textarea id="wf-desc" placeholder="Size of dump, smell, health risks, near water sources..."></textarea></div>
+          <div class="field"><label>Phone (optional)</label><input type="tel" id="wf-phone" placeholder="+263 7X XXX XXXX"></div>
+          <button class="submit-btn waste-submit" onclick="submitWaste()">🗑 Submit Waste Report</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CHARTS ROW -->
-  <div class="cr">
-    <!-- Trend -->
-    <div class="card">
-      <div class="ch"><span class="ct">📈 Monthly Trend — 2024 to 2026</span></div>
-      <div class="cb" style="padding-bottom:.5rem">
-        <canvas id="trend-canvas" height="170" style="width:100%;display:block;"></canvas>
-      </div>
-    </div>
-    <!-- Waste types -->
-    <div class="card">
-      <div class="ch"><span class="ct">♻ Waste Types</span></div>
-      <div class="cb"><div class="wbars" id="wbars"></div></div>
-    </div>
-    <!-- Status donut -->
-    <div class="card">
-      <div class="ch"><span class="ct">📊 Status</span></div>
-      <div class="cb">
-        <div class="donut-wrap">
-          <canvas id="donut-canvas" width="130" height="130"></canvas>
-          <div class="dlegend" id="dlegend"></div>
-        </div>
-      </div>
-    </div>
+  <!-- CHARTS -->
+  <div class="g3">
+    <div class="card"><div class="ch"><span class="ct">📈 Monthly Trend 2024–2026</span></div><div class="cb" style="padding-bottom:.5rem"><canvas id="w-trend" height="165" style="width:100%;display:block"></canvas></div></div>
+    <div class="card"><div class="ch"><span class="ct">♻ Waste Types</span></div><div class="cb"><div class="wbars" id="w-types"></div></div></div>
+    <div class="card"><div class="ch"><span class="ct">📊 Status</span></div><div class="cb"><div class="donut-wrap"><canvas id="w-donut" width="125" height="125"></canvas><div class="dleg" id="w-dleg"></div></div></div></div>
   </div>
 
-  <!-- FEED + WARD TABLE -->
-  <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin-bottom:1.5rem;">
-
-    <!-- LIVE FEED -->
+  <!-- FEED + TABLE -->
+  <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:14px;margin-bottom:1.5rem;">
     <div class="card" style="display:flex;flex-direction:column;">
-      <div class="ch">
-        <span class="ct">🔴 Live Incident Feed</span>
-        <span style="font-size:11px;color:var(--muted)" id="feed-count"></span>
-      </div>
-      <div id="feed" style="overflow-y:auto;max-height:380px;flex:1;"></div>
+      <div class="ch"><span class="ct">🔴 Live Feed</span><span class="ct-val" id="w-feed-count"></span></div>
+      <div class="feed" id="w-feed"></div>
+    </div>
+    <div class="card"><div class="ch"><span class="ct">🏘 By Neighbourhood — 2026</span></div>
+      <div class="wt-wrap"><table class="wt"><thead><tr><th>#</th><th>Area</th><th>Reports</th><th>Critical</th><th>Resolved</th><th>Volume</th><th>Trend</th></tr></thead><tbody id="w-tbl"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ ROADS PAGE ════════════ -->
+<div class="page" id="page-roads">
+  <div class="sec-head">
+    <div><div class="sec-title" style="color:var(--road)">Potholes & Damaged Roads</div><div class="sec-sub">All Bulawayo Roads · Live Community Reports · 2026</div></div>
+    <div class="year-tabs">
+      <button class="yr-btn road-yr" onclick="setYear(2024,this,'roads')">2024</button>
+      <button class="yr-btn road-yr" onclick="setYear(2025,this,'roads')">2025</button>
+      <button class="yr-btn road-yr active" onclick="setYear(2026,this,'roads')">2026</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="sc"><div class="sc-stripe" style="background:var(--road)"></div><div class="sc-ico">🕳</div><div class="sc-lbl">Total Potholes</div><div class="sc-val" id="rs-total">684</div><div class="sc-d up">▲ 38% vs 2025</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--waste)"></div><div class="sc-ico">⚠</div><div class="sc-lbl">Dangerous</div><div class="sc-val" id="rs-crit">41</div><div class="sc-d up">▲ 9 this week</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--green)"></div><div class="sc-ico">🔧</div><div class="sc-lbl">Repaired</div><div class="sc-val" id="rs-res">312</div><div class="sc-d dn">▼ 45% rate</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--blue)"></div><div class="sc-ico">🛣</div><div class="sc-lbl">Roads Affected</div><div class="sc-val" id="rs-roads">89</div><div class="sc-d up">▲ 12 roads</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--purple)"></div><div class="sc-ico">👥</div><div class="sc-lbl">Community Reports</div><div class="sc-val" id="rs-comm">216</div><div class="sc-d up">▲ Live</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><span class="ct">📍 Road Damage Map — All Bulawayo Roads</span><span class="ct-val" id="road-map-count"></span></div>
+      <div class="map-wrap"><svg class="map-svg" id="road-map" viewBox="0 0 740 420" xmlns="http://www.w3.org/2000/svg">
+        <defs><pattern id="rgrid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0L0 0 0 32" fill="none" stroke="rgba(255,255,255,.03)" stroke-width="1"/></pattern></defs>
+        <rect width="740" height="420" fill="#04080f"/><rect width="740" height="420" fill="url(#rgrid)"/>
+        <!-- ROADS network -->
+        <g stroke="rgba(255,255,255,.08)" stroke-width="2" fill="none">
+          <line x1="0" y1="200" x2="740" y2="200"/><line x1="370" y1="0" x2="370" y2="420"/>
+          <line x1="0" y1="300" x2="740" y2="300"/><line x1="200" y1="0" x2="200" y2="420"/>
+          <line x1="530" y1="0" x2="530" y2="420"/><line x1="0" y1="120" x2="740" y2="120"/>
+          <line x1="100" y1="0" x2="600" y2="420"/><line x1="200" y1="420" x2="700" y2="0"/>
+          <path d="M0,350 Q200,320 370,300 Q500,285 740,250"/>
+          <path d="M0,80 Q150,100 370,120 Q500,130 740,110"/>
+        </g>
+        <g opacity=".45">
+          <text x="370" y="188" text-anchor="middle" font-size="8" fill="rgba(59,158,255,.7)" font-family="Space Grotesk">CBD</text>
+          <text x="490" y="95" text-anchor="middle" font-size="8" fill="rgba(155,114,245,.7)" font-family="Space Grotesk">HILLSIDE</text>
+          <text x="600" y="90" text-anchor="middle" font-size="8" fill="rgba(0,201,177,.7)" font-family="Space Grotesk">BURNSIDE</text>
+          <text x="182" y="138" text-anchor="middle" font-size="8" fill="rgba(245,166,35,.7)" font-family="Space Grotesk">MAKOKOBA</text>
+          <text x="110" y="228" text-anchor="middle" font-size="8" fill="rgba(232,93,117,.7)" font-family="Space Grotesk">LUVEVE</text>
+          <text x="182" y="285" text-anchor="middle" font-size="8" fill="rgba(0,217,126,.7)" font-family="Space Grotesk">PUMULA</text>
+          <text x="495" y="200" text-anchor="middle" font-size="8" fill="rgba(155,114,245,.7)" font-family="Space Grotesk">NKULUMANE</text>
+          <text x="492" y="285" text-anchor="middle" font-size="8" fill="rgba(0,201,177,.7)" font-family="Space Grotesk">MPOPOMA</text>
+          <text x="355" y="355" text-anchor="middle" font-size="8" fill="rgba(245,166,35,.7)" font-family="Space Grotesk">COWDRAY PARK</text>
+          <text x="605" y="182" text-anchor="middle" font-size="8" fill="rgba(59,158,255,.7)" font-family="Space Grotesk">SUBURBS</text>
+          <text x="200" y="368" text-anchor="middle" font-size="8" fill="rgba(155,114,245,.7)" font-family="Space Grotesk">ENTUMBANE</text>
+        </g>
+        <g id="road-heat"></g><g id="road-pins"></g>
+        <g transform="translate(10,10)">
+          <rect width="130" height="72" rx="7" fill="rgba(4,8,15,.88)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+          <circle cx="14" cy="18" r="5" fill="#e85d75" opacity=".9"/><text x="24" y="22" font-size="9" fill="#4a6580" font-family="Space Grotesk">Dangerous</text>
+          <circle cx="14" cy="36" r="5" fill="#f5a623" opacity=".9"/><text x="24" y="40" font-size="9" fill="#4a6580" font-family="Space Grotesk">Severe Pothole</text>
+          <circle cx="14" cy="54" r="5" fill="#3b9eff" opacity=".9"/><text x="24" y="58" font-size="9" fill="#4a6580" font-family="Space Grotesk">Minor / Repaired</text>
+        </g>
+      </svg></div>
     </div>
 
-    <!-- WARD TABLE -->
-    <div class="card">
-      <div class="ch"><span class="ct">🏘 Breakdown by Ward — 2026</span></div>
-      <table class="wt" id="wt">
-        <thead><tr>
-          <th>#</th><th>Ward</th><th>Reports</th><th>Critical</th><th>Resolved</th><th>Volume</th><th>Trend</th>
-        </tr></thead>
-        <tbody id="wt-body"></tbody>
-      </table>
+    <!-- ROAD FORM -->
+    <div class="card road-focus" id="road-form-card">
+      <div class="ch"><span class="ct" style="color:var(--road)">🚧 Report Road Damage</span><span class="form-counter" id="road-form-ctr">216 today</span></div>
+      <div class="form-body">
+        <div id="road-form-success" class="form-success">
+          <div class="s-ico">🔧</div><div class="s-msg">Road Report Submitted!</div>
+          <div class="s-sub">Added to live map.<br>Bulawayo City Council Roads Dept notified via Zapier.</div>
+          <button class="new-btn" onclick="resetRoadForm()">+ Another report</button>
+        </div>
+        <div id="road-form-fields">
+          <div class="field"><label>Your Name (optional)</label><input type="text" id="rf-name" placeholder="e.g. Thulani Dube" style="border-color:rgba(232,93,117,.2)"></div>
+          <div class="f2">
+            <div class="field"><label>Neighbourhood *</label>
+              <select id="rf-area" style="border-color:rgba(232,93,117,.2)">
+                <option value="">Select area...</option>
+                <optgroup label="City Centre"><option>Bulawayo CBD</option><option>City Centre North</option></optgroup>
+                <optgroup label="Northern Suburbs"><option>Hillside</option><option>Burnside</option><option>Suburbs</option><option>Paddonhurst</option><option>Waterford</option><option>Famona</option><option>Northend</option><option>Montrose</option><option>Matsheumhlope</option><option>Kumalo</option><option>Selbourne Park</option><option>Newton West</option></optgroup>
+                <optgroup label="Western Townships"><option>Makokoba</option><option>Mzilikazi</option><option>Mpopoma</option><option>Iminyela</option><option>Njube</option><option>Lobengula</option><option>Luveve</option><option>Nketa</option><option>Nkulumane</option><option>Emganwini</option></optgroup>
+                <optgroup label="Southern Townships"><option>Pumula</option><option>Entumbane</option><option>Tshabalala</option><option>Emakhandeni</option><option>Cowdray Park</option><option>Magwegwe</option><option>Sunnyside</option><option>Sizinda</option><option>Mahatshula</option></optgroup>
+                <optgroup label="Eastern Areas"><option>Woodville</option><option>Barham Green</option><option>Douglasdale</option><option>Hyde Park</option><option>Other</option></optgroup>
+              </select>
+            </div>
+            <div class="field"><label>Road Name *</label><input type="text" id="rf-road" placeholder="e.g. Lobengula St" style="border-color:rgba(232,93,117,.2)"></div>
+          </div>
+          <div class="field"><label>Damage Type *</label>
+            <select id="rf-type" style="border-color:rgba(232,93,117,.2)">
+              <option value="">Select type...</option>
+              <option>Pothole — Small (&lt;30cm)</option><option>Pothole — Large (&gt;30cm)</option>
+              <option>Pothole — Dangerous / Deep</option><option>Road Crack / Subsidence</option>
+              <option>Missing Manhole Cover</option><option>Damaged Pavement / Sidewalk</option>
+              <option>Flooded / Blocked Drain</option><option>Missing Road Markings</option>
+              <option>Damaged Bridge / Culvert</option><option>Collapsed Road Edge</option>
+            </select>
+          </div>
+          <div class="field"><label>Severity *</label>
+            <div class="sev-row">
+              <button class="sev-btn" onclick="setSev('road','critical',this)">🔴 Dangerous</button>
+              <button class="sev-btn" onclick="setSev('road','high',this)">🟠 Severe</button>
+              <button class="sev-btn" onclick="setSev('road','medium',this)">🔵 Moderate</button>
+              <button class="sev-btn" onclick="setSev('road','low',this)">🟢 Minor</button>
+            </div>
+            <input type="hidden" id="rf-sev" value="">
+          </div>
+          <div class="field"><label>Description</label><textarea id="rf-desc" placeholder="Size of pothole, depth, has it caused accidents? Any vehicles damaged?" style="border-color:rgba(232,93,117,.15)"></textarea></div>
+          <div class="f2">
+            <div class="field"><label>Phone (optional)</label><input type="tel" id="rf-phone" placeholder="+263 7X XXX XXXX"></div>
+            <div class="field"><label>Time of Day</label>
+              <select id="rf-time"><option>Morning</option><option>Afternoon</option><option>Evening</option><option>Night</option></select>
+            </div>
+          </div>
+          <button class="submit-btn road-submit" onclick="submitRoad()">🚧 Submit Road Report</button>
+        </div>
+      </div>
     </div>
   </div>
 
-</div><!-- /wrap -->
+  <!-- ROAD CHARTS -->
+  <div class="g3">
+    <div class="card"><div class="ch"><span class="ct">📈 Road Reports Trend 2024–2026</span></div><div class="cb" style="padding-bottom:.5rem"><canvas id="r-trend" height="165" style="width:100%;display:block"></canvas></div></div>
+    <div class="card"><div class="ch"><span class="ct">🕳 Damage Types</span></div><div class="cb"><div class="wbars" id="r-types"></div></div></div>
+    <div class="card"><div class="ch"><span class="ct">📊 Repair Status</span></div><div class="cb"><div class="donut-wrap"><canvas id="r-donut" width="125" height="125"></canvas><div class="dleg" id="r-dleg"></div></div></div></div>
+  </div>
 
-<footer>Bulawayo Waste Watch 2026 · AI-Powered Community Reporting · Data updates every 60 seconds · All reports stored locally for your session</footer>
+  <!-- ROAD FEED + TABLE -->
+  <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:14px;margin-bottom:1.5rem;">
+    <div class="card" style="display:flex;flex-direction:column;">
+      <div class="ch"><span class="ct" style="color:var(--road)">🔴 Live Road Feed</span><span class="ct-val" id="r-feed-count"></span></div>
+      <div class="feed" id="r-feed"></div>
+    </div>
+    <div class="card"><div class="ch"><span class="ct">🛣 Worst Roads by Area — 2026</span></div>
+      <div class="wt-wrap"><table class="wt"><thead><tr><th>#</th><th>Area</th><th>Reports</th><th>Dangerous</th><th>Repaired</th><th>Volume</th><th>Trend</th></tr></thead><tbody id="r-tbl"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ ALL REPORTS PAGE ════════════ -->
+<div class="page" id="page-all">
+  <div class="sec-head"><div><div class="sec-title">All City Reports — Combined View</div><div class="sec-sub">Waste Dumping + Road Damage · Bulawayo 2026</div></div></div>
+  <div class="stats">
+    <div class="sc"><div class="sc-stripe" style="background:var(--waste)"></div><div class="sc-ico">🗑</div><div class="sc-lbl">Waste Reports</div><div class="sc-val" id="all-waste">1,247</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--road)"></div><div class="sc-ico">🕳</div><div class="sc-lbl">Road Reports</div><div class="sc-val" id="all-road">684</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--green)"></div><div class="sc-ico">✅</div><div class="sc-lbl">Total Resolved</div><div class="sc-val">1,205</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--blue)"></div><div class="sc-ico">📍</div><div class="sc-lbl">Total Incidents</div><div class="sc-val">1,931</div><div class="sc-d up">▲ 2026 YTD</div></div>
+    <div class="sc"><div class="sc-stripe" style="background:var(--purple)"></div><div class="sc-ico">🏘</div><div class="sc-lbl">Areas Covered</div><div class="sc-val">35+</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="ct">🔴 All Live Incidents — Waste & Roads Combined</span><span class="ct-val" id="all-feed-count"></span></div>
+    <div class="feed" id="all-feed" style="max-height:500px;"></div>
+  </div>
+</div>
+
+<!-- ════════════ SETUP PAGE ════════════ -->
+<div class="page" id="page-setup">
+  <div class="sec-head"><div><div class="sec-title">Setup Guide — Go Live for Free</div><div class="sec-sub">Connect Google Sheets + Zapier so every report is saved and councillors are alerted automatically</div></div></div>
+
+  <div class="guide-grid">
+    <!-- GOOGLE SHEETS SETUP -->
+    <div class="guide-card">
+      <div class="guide-title">📊 Step 1 — Google Sheets Database</div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(245,166,35,.15);color:var(--waste)">1</div>
+        <div class="gs-body">
+          <div class="gs-title">Create your Google Sheet</div>
+          <div class="gs-desc">Go to <strong>sheets.google.com</strong> → click "+ New Spreadsheet" → name it <em>"Bulawayo City Watch Reports"</em>. Create 2 tabs: one called <strong>WasteReports</strong> and one called <strong>RoadReports</strong>.</div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(245,166,35,.15);color:var(--waste)">2</div>
+        <div class="gs-body">
+          <div class="gs-title">Add these column headers (Row 1)</div>
+          <div class="gs-desc">In the WasteReports tab, add these headers in row 1:</div>
+          <div class="gs-code">A: Timestamp
+B: ReporterName
+C: Area / Neighbourhood
+D: Street / Landmark
+E: WasteType
+F: Severity
+G: Description
+H: Phone
+I: Status (leave blank — you fill this)
+J: CouncilNotified</div>
+          <div class="gs-desc" style="margin-top:.5rem">Do the same for RoadReports tab, but column E = DamageType, add column K = RoadName.</div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(245,166,35,.15);color:var(--waste)">3</div>
+        <div class="gs-body">
+          <div class="gs-title">Add the Google Apps Script (saves data automatically)</div>
+          <div class="gs-desc">In your sheet: click <strong>Extensions → Apps Script</strong>. Delete the existing code and paste this:</div>
+          <div class="gs-code" id="apps-script-code">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var data = JSON.parse(e.postData.contents);
+  var tab = data.type === 'waste'
+    ? sheet.getSheetByName('WasteReports')
+    : sheet.getSheetByName('RoadReports');
+  tab.appendRow([
+    new Date(),
+    data.name || 'Anonymous',
+    data.area,
+    data.street,
+    data.issueType,
+    data.severity,
+    data.description || '',
+    data.phone || '',
+    'Pending',
+    'Yes'
+  ]);
+  return ContentService
+    .createTextOutput(JSON.stringify({status:'OK'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</div>
+          <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(245,166,35,.15);color:var(--waste)">4</div>
+        <div class="gs-body">
+          <div class="gs-title">Deploy as Web App</div>
+          <div class="gs-desc">Click <strong>Deploy → New Deployment → Web App</strong>. Set "Who has access" to <strong>Anyone</strong>. Click Deploy. Copy the URL it gives you — that is your database endpoint. Paste it into the dashboard's <code style="color:var(--teal)">SHEET_URL</code> variable.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZAPIER SETUP -->
+    <div class="guide-card">
+      <div class="guide-title">⚡ Step 2 — Zapier Automation (Free)</div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(232,93,117,.15);color:var(--road)">1</div>
+        <div class="gs-body">
+          <div class="gs-title">Create free Zapier account</div>
+          <div class="gs-desc">Go to <strong>zapier.com</strong> → sign up free. The free plan allows 5 Zaps and 100 tasks/month — enough to get started. No credit card needed.</div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(232,93,117,.15);color:var(--road)">2</div>
+        <div class="gs-body">
+          <div class="gs-title">Create Zap 1 — New Report → Email Council</div>
+          <div class="gs-desc">Click <strong>+ Create Zap</strong>. Set the trigger as <strong>Google Sheets → New Row</strong> in WasteReports. Set the action as <strong>Gmail → Send Email</strong> to your ward councillor's email. Include the area, type, and severity in the email body.</div>
+          <div class="zapier-flow">
+            <div class="zap-node">📊 Google Sheets<br><small style="color:var(--muted)">New Row Added</small></div>
+            <span class="zap-arrow">→</span>
+            <div class="zap-node">📧 Gmail<br><small style="color:var(--muted)">Send Alert Email</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(232,93,117,.15);color:var(--road)">3</div>
+        <div class="gs-body">
+          <div class="gs-title">Create Zap 2 — Critical Report → WhatsApp</div>
+          <div class="gs-desc">Add a filter step: only continue if Severity = "Critical". Then use <strong>WhatsApp Business</strong> or <strong>Twilio</strong> action to send an instant WhatsApp message to your team's number with location and details.</div>
+          <div class="zapier-flow">
+            <div class="zap-node">📊 Sheets<br><small style="color:var(--muted)">New Critical Row</small></div>
+            <span class="zap-arrow">→</span>
+            <div class="zap-node">🔍 Filter<br><small style="color:var(--muted)">Severity = Critical</small></div>
+            <span class="zap-arrow">→</span>
+            <div class="zap-node">💬 WhatsApp<br><small style="color:var(--muted)">Send Alert</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(232,93,117,.15);color:var(--road)">4</div>
+        <div class="gs-body">
+          <div class="gs-title">Create Zap 3 — Weekly Summary → Council Report</div>
+          <div class="gs-desc">Set trigger as <strong>Schedule → Every Monday 8am</strong>. Action: <strong>Gmail → Send Email</strong> with a weekly summary of new reports. This keeps BCC and ward councillors informed every week automatically — zero effort from you.</div>
+          <div class="zapier-flow">
+            <div class="zap-node">⏰ Schedule<br><small style="color:var(--muted)">Every Monday</small></div>
+            <span class="zap-arrow">→</span>
+            <div class="zap-node">📧 Gmail<br><small style="color:var(--muted)">Weekly Report</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHO GETS NOTIFIED -->
+    <div class="guide-card">
+      <div class="guide-title">📨 Who Gets Notified — Automatically</div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(0,217,126,.15);color:var(--green)">✓</div>
+        <div class="gs-body">
+          <div class="gs-title">Ward Councillors</div>
+          <div class="gs-desc">Each report is tagged with the neighbourhood. Zapier sends an email or WhatsApp directly to the councillor for that ward — within seconds of a report being submitted.</div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(0,217,126,.15);color:var(--green)">✓</div>
+        <div class="gs-body">
+          <div class="gs-title">Bulawayo City Council (BCC)</div>
+          <div class="gs-desc">Critical and high-severity reports trigger an automatic email to the BCC Waste Management Department and the Roads Department with full incident details and location.</div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(0,217,126,.15);color:var(--green)">✓</div>
+        <div class="gs-body">
+          <div class="gs-title">Your Project Team</div>
+          <div class="gs-desc">You receive a WhatsApp or email for every new report. You can update the Status column in Google Sheets to "Resolved" and the dashboard will reflect it.</div>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(0,217,126,.15);color:var(--green)">✓</div>
+        <div class="gs-body">
+          <div class="gs-title">The Reporter</div>
+          <div class="gs-desc">If they left a phone number, Zapier can send them a confirmation SMS via Twilio (free tier) saying their report was received and who was notified.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COST BREAKDOWN -->
+    <div class="guide-card">
+      <div class="guide-title">💰 Total Cost — Getting Started</div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(59,158,255,.15);color:var(--blue)">$0</div>
+        <div class="gs-body"><div class="gs-title">Google Sheets</div><div class="gs-desc">Completely free. Unlimited rows. Stores every report permanently. Can be shared with BCC and councillors as a read-only link.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(59,158,255,.15);color:var(--blue)">$0</div>
+        <div class="gs-body"><div class="gs-title">Google Apps Script</div><div class="gs-desc">Free. This is the glue that receives form submissions and saves them to your sheet. Runs on Google's servers.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(59,158,255,.15);color:var(--blue)">$0</div>
+        <div class="gs-body"><div class="gs-title">Zapier Free Plan</div><div class="gs-desc">Free tier: 5 Zaps, 100 tasks/month. Enough to handle email alerts for all critical reports. Upgrade to $19/month if you need more.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="gs-num" style="background:rgba(59,158,255,.15);color:var(--blue)">$0</div>
+        <div class="gs-body"><div class="gs-title">This Dashboard</div><div class="gs-desc">Host it free on GitHub Pages or Netlify. Share the link with BCC, councillors, NGOs, and media. No server costs ever.</div></div>
+      </div>
+      <div style="background:rgba(0,217,126,.07);border:1px solid rgba(0,217,126,.2);border-radius:8px;padding:.9rem;margin-top:.5rem;">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:.3rem;">💡 How to pitch this to a big client</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;">Show BCC or an NGO this live dashboard with real data from your neighbourhood. Offer to manage the system for a monthly fee of $200–$500/month. The cost to run it stays near zero. That's your business model.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+<footer>Bulawayo City Watch 2026 · AI-Powered Community Infrastructure Monitoring · All 35+ Neighbourhoods Covered · Built to solve real problems</footer>
 
 <script>
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // DATA
-// ═══════════════════════════════════════════════
-const yearStats = {
-  2024: { total:622, crit:28, res:441, time:'5.1', comm:148 },
-  2025: { total:847, crit:34, res:612, time:'4.2', comm:263 },
-  2026: { total:1247, crit:52, res:893, time:'3.8', comm:384 },
+// ══════════════════════════════════════════
+const NEIGHBOURHOODS = [
+  'Bulawayo CBD','City Centre North','Hillside','Burnside','Suburbs','Paddonhurst',
+  'Waterford','Famona','Northend','Montrose','Matsheumhlope','Kumalo','Selbourne Park',
+  'Newton West','Makokoba','Mzilikazi','Mpopoma','Iminyela','Njube','Lobengula',
+  'Luveve','Nketa','Nkulumane','Emganwini','Pumula','Entumbane','Tshabalala',
+  'Emakhandeni','Cowdray Park','Magwegwe','Sunnyside','Sizinda','Mahatshula',
+  'Woodville','Barham Green','Douglasdale','Hyde Park'
+];
+
+const NEIGH_COORDS = {
+  'Bulawayo CBD':{x:370,y:185},'City Centre North':{x:370,y:135},'Hillside':{x:490,y:95},
+  'Burnside':{x:597,y:92},'Suburbs':{x:605,y:180},'Paddonhurst':{x:370,y:100},
+  'Waterford':{x:555,y:60},'Famona':{x:450,y:60},'Northend':{x:310,y:70},
+  'Montrose':{x:425,y:75},'Matsheumhlope':{x:470,y:115},'Kumalo':{x:530,y:130},
+  'Selbourne Park':{x:530,y:60},'Newton West':{x:285,y:100},'Makokoba':{x:182,y:138},
+  'Mzilikazi':{x:145,y:168},'Mpopoma':{x:472,y:247},'Iminyela':{x:205,y:175},
+  'Njube':{x:225,y:200},'Lobengula':{x:248,y:225},'Luveve':{x:110,y:228},
+  'Nketa':{x:148,y:208},'Nkulumane':{x:495,y:197},'Emganwini':{x:390,y:255},
+  'Pumula':{x:182,y:285},'Entumbane':{x:200,y:360},'Tshabalala':{x:105,y:335},
+  'Emakhandeni':{x:605,y:268},'Cowdray Park':{x:355,y:348},'Magwegwe':{x:285,y:295},
+  'Sunnyside':{x:300,y:320},'Sizinda':{x:430,y:330},'Mahatshula':{x:465,y:308},
+  'Woodville':{x:640,y:200},'Barham Green':{x:660,y:265},'Douglasdale':{x:640,y:320},
+  'Hyde Park':{x:680,y:155},'Other':{x:370,y:200}
 };
 
-const yearTrend = {
-  2024: [
-    {m:'Jan',v:38},{m:'Feb',v:44},{m:'Mar',v:51},{m:'Apr',v:48},
-    {m:'May',v:55},{m:'Jun',v:60},{m:'Jul',v:58},{m:'Aug',v:65},
-    {m:'Sep',v:72},{m:'Oct',v:68},{m:'Nov',v:74},{m:'Dec',v:65},
-  ],
-  2025: [
-    {m:'Jan',v:52},{m:'Feb',v:61},{m:'Mar',v:45},{m:'Apr',v:78},
-    {m:'May',v:90},{m:'Jun',v:84},{m:'Jul',v:102},{m:'Aug',v:110},
-    {m:'Sep',v:98},{m:'Oct',v:115},{m:'Nov',v:108},{m:'Dec',v:122},
-  ],
-  2026: [
-    {m:'Jan',v:95},{m:'Feb',v:108},{m:'Mar',v:121},{m:'Apr',v:138},
-    {m:'May',v:156},{m:'Jun',v:143},{m:'Jul',v:168},{m:'Aug',v:175},
-    {m:'Sep',v:162},{m:'Oct',v:189},{m:'Nov',v:201},{m:'Dec',v:null},
-  ],
-};
+let wasteIncidents = [
+  {id:1,loc:'Makokoba – 5th Ave',area:'Makokoba',type:'Mixed Waste',sev:'critical',status:'Active',rpts:23,time:'Today 08:14',desc:'Large pile blocking drainage channel.'},
+  {id:2,loc:'Luveve – Open Field',area:'Luveve',type:'Household Waste',sev:'critical',status:'Active',rpts:18,time:'Today 07:02',desc:'Recurring dump site near school.'},
+  {id:3,loc:'Pumula – Stream Bank',area:'Pumula',type:'Chemical / Hazardous',sev:'critical',status:'Active',rpts:28,time:'Today 06:45',desc:'Chemical drums near stream. Environmental hazard.'},
+  {id:4,loc:'Cowdray Park – Boundary Rd',area:'Cowdray Park',type:'Construction Debris',sev:'high',status:'Active',rpts:15,time:'Yesterday',desc:'Construction rubble dumped overnight.'},
+  {id:5,loc:'Hillside – Nature Reserve',area:'Hillside',type:'Mixed Waste',sev:'high',status:'Active',rpts:11,time:'Yesterday',desc:'Dumping near nature reserve entrance.'},
+  {id:6,loc:'Burnside – Shopping Centre',area:'Burnside',type:'Plastic Waste',sev:'medium',status:'Active',rpts:8,time:'2 days ago',desc:'Plastic bags and bottles near mall.'},
+  {id:7,loc:'CBD – 9th Avenue',area:'Bulawayo CBD',type:'Household Waste',sev:'medium',status:'Active',rpts:6,time:'Today 10:30',desc:'Overnight dumping near skip bins.'},
+  {id:8,loc:'Nkulumane – Vacant Plot',area:'Nkulumane',type:'Construction Debris',sev:'high',status:'Active',rpts:14,time:'Yesterday',desc:'Vacant plot used as unofficial dump.'},
+  {id:9,loc:'Mpopoma – Market Area',area:'Mpopoma',type:'Organic / Food Waste',sev:'medium',status:'Active',rpts:9,time:'2 days ago',desc:'Market traders dumping produce.'},
+  {id:10,loc:'Entumbane – School Lane',area:'Entumbane',type:'Mixed Waste',sev:'high',status:'Resolved',rpts:21,time:'3 days ago',desc:'Resolved after community clean-up.'},
+  {id:11,loc:'Tshabalala – Clinic Rd',area:'Tshabalala',type:'Medical Waste',sev:'critical',status:'Active',rpts:19,time:'Today 06:30',desc:'Suspected medical waste near clinic.'},
+  {id:12,loc:'Emakhandeni – Dip Rd',area:'Emakhandeni',type:'Plastic Waste',sev:'medium',status:'Resolved',rpts:7,time:'4 days ago',desc:'Cleared. Bins installed.'},
+];
+
+let roadIncidents = [
+  {id:101,loc:'Lobengula St – CBD',area:'Bulawayo CBD',type:'Pothole — Large (>30cm)',sev:'critical',status:'Active',rpts:34,time:'Today 07:15',desc:'3 large potholes caused 2 tyre bursts this week.'},
+  {id:102,loc:'Hillside Rd – Near School',area:'Hillside',type:'Pothole — Dangerous / Deep',sev:'critical',status:'Active',rpts:22,time:'Today 08:00',desc:'Deep pothole hidden by puddle. Dangerous.'},
+  {id:103,loc:'Luveve Road – Bypass',area:'Luveve',type:'Road Crack / Subsidence',sev:'high',status:'Active',rpts:17,time:'Yesterday',desc:'Road cracking along 200m stretch.'},
+  {id:104,loc:'Burnside – 12th Ave',area:'Burnside',type:'Pothole — Small (<30cm)',sev:'medium',status:'Active',rpts:5,time:'2 days ago',desc:'Several small potholes near intersection.'},
+  {id:105,loc:'Nkulumane – Main Rd',area:'Nkulumane',type:'Missing Manhole Cover',sev:'critical',status:'Active',rpts:28,time:'Today 06:00',desc:'Open manhole. Extremely dangerous at night.'},
+  {id:106,loc:'Pumula – Church Rd',area:'Pumula',type:'Flooded / Blocked Drain',sev:'high',status:'Active',rpts:12,time:'Yesterday',desc:'Blocked drain floods road every rain.'},
+  {id:107,loc:'Mpopoma – Masotsha Ave',area:'Mpopoma',type:'Pothole — Large (>30cm)',sev:'high',status:'Repaired',rpts:19,time:'3 days ago',desc:'Patched by council team.'},
+  {id:108,loc:'Cowdray Park – Old Farm Rd',area:'Cowdray Park',type:'Collapsed Road Edge',sev:'high',status:'Active',rpts:11,time:'2 days ago',desc:'Road edge collapsed. One lane blocked.'},
+  {id:109,loc:'Makokoba – Leopold Takawira',area:'Makokoba',type:'Pothole — Large (>30cm)',sev:'critical',status:'Active',rpts:25,time:'Yesterday',desc:'Major potholes on busy commuter road.'},
+  {id:110,loc:'Suburbs – Heany Ave',area:'Suburbs',type:'Damaged Pavement / Sidewalk',sev:'medium',status:'Active',rpts:4,time:'3 days ago',desc:'Broken pavement unsafe for pedestrians.'},
+  {id:111,loc:'Entumbane – Nkululeko Rd',area:'Entumbane',type:'Pothole — Dangerous / Deep',sev:'critical',status:'Active',rpts:31,time:'Today 09:00',desc:'Series of deep potholes. Road barely passable.'},
+  {id:112,loc:'Mahatshula – Ring Rd',area:'Mahatshula',type:'Missing Road Markings',sev:'medium',status:'Repaired',rpts:6,time:'5 days ago',desc:'Road markings repainted.'},
+];
+
+const wasteNeighData = [
+  {name:'Pumula',total:278,crit:14,res:191,chg:+28},
+  {name:'Makokoba',total:254,crit:12,res:180,chg:+15},
+  {name:'Luveve',total:209,crit:10,res:152,chg:-4},
+  {name:'Nkulumane',total:198,crit:8,res:138,chg:+9},
+  {name:'Cowdray Park',total:167,crit:6,res:118,chg:-11},
+  {name:'Entumbane',total:134,crit:5,res:98,chg:+7},
+  {name:'Bulawayo CBD',total:112,crit:4,res:82,chg:+22},
+  {name:'Hillside',total:89,crit:2,res:68,chg:-3},
+];
+
+const roadNeighData = [
+  {name:'Bulawayo CBD',total:148,crit:18,res:62,chg:+35},
+  {name:'Makokoba',total:112,crit:12,res:45,chg:+28},
+  {name:'Nkulumane',total:98,crit:9,res:41,chg:+19},
+  {name:'Entumbane',total:87,crit:11,res:38,chg:+41},
+  {name:'Luveve',total:74,crit:7,res:32,chg:+12},
+  {name:'Pumula',total:65,crit:6,res:28,chg:-5},
+  {name:'Hillside',total:52,crit:3,res:31,chg:-8},
+  {name:'Burnside',total:48,crit:2,res:35,chg:+4},
+];
 
 const wasteTypes = [
-  {label:'Mixed Waste',c:'#f5a623',v:412},
-  {label:'Household Waste',c:'#ef5b5b',v:318},
-  {label:'Construction Debris',c:'#a78bfa',v:198},
-  {label:'Plastic Waste',c:'#4da6ff',v:142},
-  {label:'Chemical / Hazardous',c:'#22d3c8',v:87},
-  {label:'Organic Waste',c:'#2ecc71',v:64},
+  {l:'Mixed Waste',c:'#f5a623',v:412},{l:'Household Waste',c:'#e85d75',v:318},
+  {l:'Construction Debris',c:'#9b72f5',v:198},{l:'Plastic Waste',c:'#3b9eff',v:142},
+  {l:'Chemical / Hazardous',c:'#00c9b1',v:87},{l:'Organic / Food Waste',c:'#00d97e',v:64},
+  {l:'Medical Waste',c:'#ff6b35',v:26},
 ];
 
-const wardData = [
-  {name:'Ward 3 – Pumula',total:278,crit:14,res:191,chg:+28},
-  {name:'Ward 1 – Makokoba',total:254,crit:12,res:180,chg:+15},
-  {name:'Ward 2 – Luveve',total:209,crit:10,res:152,chg:-4},
-  {name:'Ward 4 – Nkulumane',total:198,crit:8,res:138,chg:+9},
-  {name:'Ward 6 – Cowdray Park',total:167,crit:6,res:118,chg:-11},
-  {name:'Ward 5 – Mpopoma',total:141,crit:4,res:90,chg:+3},
+const roadTypes = [
+  {l:'Pothole — Large',c:'#e85d75',v:218},{l:'Pothole — Dangerous',c:'#f5a623',v:156},
+  {l:'Road Crack',c:'#9b72f5',v:98},{l:'Missing Manhole',c:'#3b9eff',v:72},
+  {l:'Flooded Drain',c:'#00c9b1',v:65},{l:'Pavement Damage',c:'#00d97e',v:48},
+  {l:'Pothole — Small',c:'#7a8fa6',v:27},
 ];
 
-const wardCoords = {
-  'Ward 1 – Makokoba':{x:212,y:155},
-  'Ward 2 – Luveve':{x:131,y:240},
-  'Ward 3 – Pumula':{x:214,y:288},
-  'Ward 4 – Nkulumane':{x:477,y:140},
-  'Ward 5 – Mpopoma':{x:472,y:245},
-  'Ward 6 – Cowdray Park':{x:339,y:340},
-  'City Centre':{x:344,y:183},
-  'Other':{x:350,y:200},
-};
-
-let incidents = [
-  {id:1,loc:'Makokoba – 5th Ave',ward:'Ward 1 – Makokoba',type:'Mixed Waste',sev:'critical',status:'Active',rpts:23,time:'Today 08:14',x:213,y:135,desc:'Large pile blocking drainage. Includes construction rubble and household waste.'},
-  {id:2,loc:'Luveve – Open Field',ward:'Ward 2 – Luveve',type:'Household Waste',sev:'critical',status:'Active',rpts:18,time:'Today 07:02',x:98,y:220,desc:'Recurring dump site near school. Health concerns raised by residents.'},
-  {id:3,loc:'Pumula – Stream Bank',ward:'Ward 3 – Pumula',type:'Chemical / Hazardous',sev:'critical',status:'Active',rpts:28,time:'Today 06:45',x:195,y:268,desc:'Chemical drums dumped near stream. Environmental hazard.'},
-  {id:4,loc:'Cowdray Park – Boundary Rd',ward:'Ward 6 – Cowdray Park',type:'Construction Debris',sev:'high',status:'Active',rpts:15,time:'Yesterday',x:305,y:318,desc:'Construction rubble dumped overnight. Road partially blocked.'},
-  {id:5,loc:'Nkulumane – Near Shops',ward:'Ward 4 – Nkulumane',type:'Household Waste',sev:'high',status:'Pending',rpts:12,time:'Yesterday',x:452,y:118,desc:'Overflowing bins not collected for 2 weeks.'},
-  {id:6,loc:'Pumula – Clinic Area',ward:'Ward 3 – Pumula',type:'Medical Waste',sev:'critical',status:'Active',rpts:19,time:'Today 06:30',x:228,y:295,desc:'Suspected medical waste near clinic. Urgent intervention needed.'},
-  {id:7,loc:'Mpopoma – Market Area',ward:'Ward 5 – Mpopoma',type:'Organic Waste',sev:'medium',status:'Active',rpts:9,time:'2 days ago',x:448,y:225,desc:'Market traders dumping unsold produce. Pest problems reported.'},
-  {id:8,loc:'Makokoba – Railway Reserve',ward:'Ward 1 – Makokoba',type:'Mixed Waste',sev:'high',status:'Resolved',rpts:31,time:'3 days ago',x:175,y:125,desc:'Resolved after community clean-up drive.'},
-  {id:9,loc:'Luveve – Dip Road',ward:'Ward 2 – Luveve',type:'Plastic Waste',sev:'medium',status:'Resolved',rpts:7,time:'4 days ago',x:112,y:258,desc:'Cleared by council. Bins installed at site.'},
-  {id:10,loc:'City Centre – 9th Ave',ward:'City Centre',type:'Household Waste',sev:'medium',status:'Active',rpts:6,time:'Today 10:30',x:308,y:162,desc:'Overnight dumping near skip bins.'},
-  {id:11,loc:'Nkulumane – Vacant Plot',ward:'Ward 4 – Nkulumane',type:'Construction Debris',sev:'high',status:'Active',rpts:14,time:'Yesterday',x:498,y:108,desc:'Vacant plot used as unofficial dump for months.'},
-  {id:12,loc:'Cowdray Park – Old Farm',ward:'Ward 6 – Cowdray Park',type:'Mixed Waste',sev:'medium',status:'Resolved',rpts:11,time:'5 days ago',x:360,y:352,desc:'Cleared after ward councillor intervention. Now fenced.'},
+const wasteTrend = [
+  {m:'Jan 24',v:38},{m:'Jul 24',v:65},{m:'Jan 25',v:78},{m:'Jul 25',v:102},
+  {m:'Jan 26',v:138},{m:'Apr 26',v:156},{m:'Jul 26',v:175},{m:'Oct 26',v:189},{m:'Dec 26',v:null},
+];
+const roadTrend = [
+  {m:'Jan 24',v:22},{m:'Jul 24',v:35},{m:'Jan 25',v:41},{m:'Jul 25',v:58},
+  {m:'Jan 26',v:72},{m:'Apr 26',v:88},{m:'Jul 26',v:95},{m:'Oct 26',v:112},{m:'Dec 26',v:null},
 ];
 
-let nextId = 13;
-let selSev = '';
+let wSev='', rSev='', nextId=200;
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // CLOCK
-// ═══════════════════════════════════════════════
-function tick() {
-  const n = new Date();
-  document.getElementById('clock').textContent =
-    n.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
-    n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' CAT';
-}
-setInterval(tick,1000); tick();
+// ══════════════════════════════════════════
+function tick(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' CAT';}
+setInterval(tick,1000);tick();
 
-// ═══════════════════════════════════════════════
-// YEAR SWITCH
-// ═══════════════════════════════════════════════
-let curYear = 2026;
-function setYear(y, btn) {
-  curYear = y;
-  document.querySelectorAll('.year-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const s = yearStats[y];
-  animateVal('s-total', s.total.toLocaleString());
-  animateVal('s-crit', s.crit);
-  animateVal('s-res', s.res.toLocaleString());
-  animateVal('s-time', s.time+'d');
-  animateVal('s-comm', s.comm.toLocaleString());
-  renderTrend(y);
-}
-function animateVal(id,v) {
-  const el = document.getElementById(id);
-  el.textContent = v; el.classList.add('flash');
-  setTimeout(()=>el.classList.remove('flash'),400);
+// ══════════════════════════════════════════
+// PAGE NAVIGATION
+// ══════════════════════════════════════════
+function showPage(id, sbEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active','road-active'));
+  if(sbEl){sbEl.classList.add(id==='roads'?'road-active':'active');}
+  document.querySelectorAll('.tb-tab').forEach(t=>t.classList.remove('active'));
+  const tabMap={'waste':0,'roads':1,'all':2,'setup':3};
+  const tabs=document.querySelectorAll('.tb-tab');
+  if(tabMap[id]!==undefined)tabs[tabMap[id]].classList.add('active');
+  const topBtn=document.getElementById('topbtn');
+  if(id==='roads'){topBtn.className='btn-main btn-road';topBtn.textContent='+ Report Road';}
+  else if(id==='waste'){topBtn.className='btn-main btn-waste';topBtn.textContent='+ Report Waste';}
+  if(id==='all')renderAllFeed();
+  if(id==='setup')return;
+  setTimeout(()=>{
+    if(id==='waste'||id==='roads'){renderTrend(id==='waste'?'w-trend':id==='roads'?'r-trend':'w-trend',id==='waste'?wasteTrend:roadTrend,id==='roads'?'#e85d75':'#f5a623');}
+  },80);
 }
 
-// ═══════════════════════════════════════════════
-// MAP PINS
-// ═══════════════════════════════════════════════
-function sevColor(s,status) {
-  if(status==='Resolved') return '#2ecc71';
-  return s==='critical'?'#ef5b5b':s==='high'?'#f5a623':s==='medium'?'#4da6ff':'#2ecc71';
-}
-function sevLabel(s) {
-  return s==='critical'?'Critical':s==='high'?'High':s==='medium'?'Medium':'Low';
+function scrollForm(){
+  const id=document.querySelector('.page.active').id;
+  const target=id==='page-roads'?'road-form-card':'waste-form-card';
+  document.getElementById(target).scrollIntoView({behavior:'smooth',block:'center'});
 }
 
-function renderPins() {
-  const pg = document.getElementById('pins');
-  const hg = document.getElementById('heatspots');
-  pg.innerHTML=''; hg.innerHTML='';
-  const crits = incidents.filter(d=>d.sev==='critical'&&d.status!=='Resolved');
-  crits.forEach(d=>{
-    const el = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-    el.setAttribute('cx',d.x); el.setAttribute('cy',d.y);
-    el.setAttribute('rx',38); el.setAttribute('ry',28);
-    el.setAttribute('fill','url(#glow-r)');
+// ══════════════════════════════════════════
+// SEV BUTTONS
+// ══════════════════════════════════════════
+function setSev(form,s,btn){
+  const prefix=form==='waste'?'wf':'rf';
+  if(form==='waste')wSev=s;else rSev=s;
+  btn.closest('.sev-row').querySelectorAll('.sev-btn').forEach(b=>b.className='sev-btn');
+  btn.className=`sev-btn s-${s}`;
+  document.getElementById(prefix+'-sev').value=s;
+}
+
+// ══════════════════════════════════════════
+// MAP RENDERING
+// ══════════════════════════════════════════
+function sevCol(sev,status){
+  if(status==='Resolved'||status==='Repaired')return '#00d97e';
+  return sev==='critical'?'#e85d75':sev==='high'?'#f5a623':sev==='medium'?'#3b9eff':'#00d97e';
+}
+
+function renderMap(svgId,heatId,pinsId,incidents){
+  const pg=document.getElementById(pinsId);
+  const hg=document.getElementById(heatId);
+  if(!pg||!hg)return;
+  pg.innerHTML='';hg.innerHTML='';
+  const svg=document.getElementById(svgId);
+  const vb=svg.getAttribute('viewBox').split(' ');
+  const W=parseFloat(vb[2]),H=parseFloat(vb[3]);
+  incidents.filter(d=>d.sev==='critical'&&d.status==='Active').forEach(d=>{
+    const coords=NEIGH_COORDS[d.area]||{x:370,y:200};
+    const el=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    el.setAttribute('cx',coords.x);el.setAttribute('cy',coords.y);
+    el.setAttribute('rx',40);el.setAttribute('ry',28);
+    el.setAttribute('fill','url(#glow-r)');el.setAttribute('opacity','.7');
     hg.appendChild(el);
   });
   incidents.forEach(d=>{
-    const c = sevColor(d.sev,d.status);
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const coords=NEIGH_COORDS[d.area]||{x:W/2,y:H/2};
+    const jitter=()=>(Math.random()-.5)*22;
+    const cx=coords.x+jitter(),cy=coords.y+jitter();
+    const c=sevCol(d.sev,d.status);
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
     g.style.cursor='pointer';
-    g.innerHTML = `
-      <circle cx="${d.x}" cy="${d.y}" r="12" fill="${c}" opacity="0.12"/>
-      <circle cx="${d.x}" cy="${d.y}" r="7" fill="${c}" opacity="${d.status==='Resolved'?0.5:0.95}"/>
-      <circle cx="${d.x}" cy="${d.y}" r="7" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.35" style="animation:ripple2 2.2s ease-out infinite ${(d.id*0.3)%2}s"/>
-    `;
-    g.addEventListener('click',()=>openModal(d));
-    g.addEventListener('mouseenter',(e)=>showTip(e,d.loc,`${sevLabel(d.sev)} · ${d.type}`,`${d.rpts} reports · ${d.time}`));
+    g.innerHTML=`<circle cx="${cx}" cy="${cy}" r="11" fill="${c}" opacity="0.1"/>
+      <circle cx="${cx}" cy="${cy}" r="6" fill="${c}" opacity="${d.status==='Active'?0.9:0.45}"/>
+      <circle cx="${cx}" cy="${cy}" r="6" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.3" style="animation:rp ${1.8+Math.random()}s ease-out infinite ${Math.random().toFixed(1)}s"/>`;
+    g.addEventListener('click',()=>openModal(d,pinsId.includes('road')?'road':'waste'));
+    g.addEventListener('mouseenter',e=>showTip(e,d.loc,`${d.sev.toUpperCase()} · ${d.type}`,`${d.rpts} reports · ${d.time}`));
     g.addEventListener('mouseleave',hideTip);
     pg.appendChild(g);
   });
-  document.getElementById('map-count').textContent = `${incidents.filter(d=>d.status!=='Resolved').length} active sites`;
+  const countEl=document.getElementById(pinsId.includes('road')?'road-map-count':'waste-map-count');
+  if(countEl)countEl.textContent=incidents.filter(d=>d.status==='Active').length+' active sites';
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // FEED
-// ═══════════════════════════════════════════════
-function badgeCls(sev,status) {
-  if(status==='Resolved') return 'br';
-  return sev==='critical'?'bc':sev==='high'?'bh':'bm';
+// ══════════════════════════════════════════
+function badgeCls(sev,status){
+  if(status==='Resolved'||status==='Repaired')return 'fi-badge br';
+  return sev==='critical'?'fi-badge bc':sev==='high'?'fi-badge bh':'fi-badge bm';
 }
-function badgeText(sev,status) {
-  if(status==='Resolved') return 'Resolved';
-  return sevLabel(sev);
+function badgeTxt(sev,status){
+  if(status==='Resolved'||status==='Repaired')return status;
+  return sev==='critical'?'Critical':sev==='high'?'High':sev==='medium'?'Medium':'Low';
 }
 
-function renderFeed(highlight=-1) {
-  const feed = document.getElementById('feed');
-  feed.innerHTML = incidents.slice().reverse().map(d=>`
-    <div class="feed-item${d.id===highlight?' new-item':''}" onclick='openModal(${JSON.stringify(d).replace(/'/g,"&apos;")})'>
-      <div class="fi-dot" style="background:${sevColor(d.sev,d.status)}"></div>
+function renderFeed(elId,incidents,kind,highlight=-1){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  el.innerHTML=incidents.slice(0,20).map(d=>`
+    <div class="fi${d.id===highlight?(kind==='road'?' road-new':' new-fi'):''}" onclick='openModal(${JSON.stringify(d).replace(/'/g,"&apos;")},"${kind}")'>
+      <div class="fi-dot" style="background:${sevCol(d.sev,d.status)}"></div>
       <div class="fi-info">
         <div class="fi-loc">${d.loc}</div>
-        <div class="fi-meta">${d.type} · ${d.time} · ${d.rpts} report${d.rpts!==1?'s':''}</div>
+        <div class="fi-meta">${d.area} · ${d.time} · ${d.rpts} report${d.rpts!==1?'s':''}</div>
       </div>
-      <span class="fi-badge ${badgeCls(d.sev,d.status)}">${badgeText(d.sev,d.status)}</span>
+      <span class="fi-type ft-${kind}">${kind==='waste'?'Waste':'Road'}</span>
+      <span class="${badgeCls(d.sev,d.status)}">${badgeTxt(d.sev,d.status)}</span>
     </div>`).join('');
-  document.getElementById('feed-count').textContent = `${incidents.filter(d=>d.status!=='Resolved').length} active`;
+  const cEl=document.getElementById(elId.replace('feed','feed-count'));
+  if(cEl)cEl.textContent=incidents.filter(d=>d.status==='Active').length+' active';
 }
 
-// ═══════════════════════════════════════════════
-// TREND CHART
-// ═══════════════════════════════════════════════
-function renderTrend(year) {
-  const canvas = document.getElementById('trend-canvas');
-  canvas.width = canvas.offsetWidth||400; canvas.height=170;
-  const ctx = canvas.getContext('2d');
-  const data = yearTrend[year].filter(d=>d.v!==null);
-  const W=canvas.width, H=canvas.height;
-  const pad={top:18,right:14,bottom:26,left:32};
-  const w=W-pad.left-pad.right, h=H-pad.top-pad.bottom;
-  const vals=data.map(d=>d.v);
-  const maxV=Math.max(...vals)*1.18;
-  const pts=vals.map((v,i)=>({
-    x:pad.left+(i/(Math.max(data.length-1,1)))*w,
-    y:pad.top+(1-v/maxV)*h
-  }));
-  ctx.clearRect(0,0,W,H);
-  // gridlines
-  [0.25,0.5,0.75,1].forEach(t=>{
-    const y=pad.top+t*h;
-    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(pad.left+w,y); ctx.stroke();
-    ctx.fillStyle='rgba(94,122,150,0.7)'; ctx.font='9px Outfit'; ctx.textAlign='right';
-    ctx.fillText(Math.round(maxV*(1-t)), pad.left-4, y+3);
-  });
-  // area fill
-  const g=ctx.createLinearGradient(0,pad.top,0,pad.top+h);
-  g.addColorStop(0,year===2026?'rgba(245,166,35,0.3)':'rgba(77,166,255,0.3)');
-  g.addColorStop(1,'rgba(245,166,35,0)');
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pad.top+h);
-  pts.forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.lineTo(pts[pts.length-1].x,pad.top+h); ctx.closePath();
-  ctx.fillStyle=g; ctx.fill();
-  // line
-  ctx.beginPath(); ctx.strokeStyle=year===2026?'#f5a623':'#4da6ff';
-  ctx.lineWidth=2.5; ctx.lineJoin='round';
-  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
-  // dots
-  pts.forEach((p,i)=>{
-    ctx.beginPath(); ctx.arc(p.x,p.y,3.5,0,Math.PI*2);
-    ctx.fillStyle=year===2026?'#f5a623':'#4da6ff'; ctx.fill();
-    ctx.strokeStyle='#08101a'; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.fillStyle='rgba(94,122,150,0.7)'; ctx.font='9px Outfit'; ctx.textAlign='center';
-    ctx.fillText(data[i].m, p.x, pad.top+h+15);
-  });
+function renderAllFeed(){
+  const all=[...wasteIncidents,...roadIncidents].sort((a,b)=>b.id-a.id);
+  renderFeed('all-feed',all,'mixed');
+  const el=document.getElementById('all-feed-count');
+  if(el)el.textContent=all.filter(d=>d.status==='Active').length+' active total';
 }
 
-// ═══════════════════════════════════════════════
-// WASTE BARS
-// ═══════════════════════════════════════════════
-function renderWasteBars() {
-  const max=Math.max(...wasteTypes.map(w=>w.v));
-  document.getElementById('wbars').innerHTML=wasteTypes.map(w=>`
-    <div class="wbar-row">
-      <div class="wbar-lbl"><span>${w.label}</span><span style="color:var(--muted)">${w.v}</span></div>
-      <div class="wbar-track"><div class="wbar-fill" style="width:${(w.v/max*100).toFixed(0)}%;background:${w.c}"></div></div>
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════
-// DONUT
-// ═══════════════════════════════════════════════
-function renderDonut() {
-  const stats = yearStats[2026];
-  const active = stats.total - stats.res - Math.round(stats.total*0.07);
-  const pending = Math.round(stats.total*0.07);
-  const sdata = [
-    {label:'Resolved',v:stats.res,c:'#2ecc71'},
-    {label:'Active',v:active,c:'#ef5b5b'},
-    {label:'Pending',v:pending,c:'#f5a623'},
-  ];
-  const canvas=document.getElementById('donut-canvas');
+// ══════════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════════
+function renderTrend(canvasId,data,color){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth||420;canvas.height=165;
   const ctx=canvas.getContext('2d');
-  const cx=65,cy=65,R=52,r=36;
+  const pts=data.filter(d=>d.v!==null);
+  const W=canvas.width,H=canvas.height;
+  const pad={t:18,r:12,b:26,l:32};
+  const w=W-pad.l-pad.r,h=H-pad.t-pad.b;
+  const maxV=Math.max(...pts.map(d=>d.v))*1.2;
+  const xy=pts.map((d,i)=>({x:pad.l+(i/(pts.length-1))*w,y:pad.t+(1-d.v/maxV)*h}));
+  ctx.clearRect(0,0,W,H);
+  [.25,.5,.75,1].forEach(t=>{
+    const y=pad.t+t*h;
+    ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+w,y);ctx.stroke();
+    ctx.fillStyle='rgba(74,101,128,.8)';ctx.font='9px Space Grotesk';ctx.textAlign='right';
+    ctx.fillText(Math.round(maxV*(1-t)),pad.l-4,y+3);
+  });
+  const g=ctx.createLinearGradient(0,pad.t,0,pad.t+h);
+  g.addColorStop(0,color+'44');g.addColorStop(1,color+'00');
+  ctx.beginPath();ctx.moveTo(xy[0].x,pad.t+h);
+  xy.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(xy[xy.length-1].x,pad.t+h);ctx.closePath();
+  ctx.fillStyle=g;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  xy.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+  xy.forEach((p,i)=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);
+    ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#04080f';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='rgba(74,101,128,.8)';ctx.font='8px Space Grotesk';ctx.textAlign='center';
+    ctx.fillText(pts[i].m,p.x,pad.t+h+14);
+  });
+}
+
+function renderBars(elId,types){
+  const max=Math.max(...types.map(t=>t.v));
+  document.getElementById(elId).innerHTML=types.map(t=>`
+    <div class="wb-row">
+      <div class="wb-lbl"><span>${t.l}</span><span>${t.v}</span></div>
+      <div class="wb-track"><div class="wb-fill" style="width:${(t.v/max*100).toFixed(0)}%;background:${t.c}"></div></div>
+    </div>`).join('');
+}
+
+function renderDonut(canvasId,legId,sdata){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const cx=62,cy=62,R=50,r=34;
   const total=sdata.reduce((a,d)=>a+d.v,0);
   let angle=-Math.PI/2;
-  ctx.clearRect(0,0,130,130);
+  ctx.clearRect(0,0,125,125);
   sdata.forEach(d=>{
     const sw=(d.v/total)*Math.PI*2;
-    ctx.beginPath(); ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,R,angle,angle+sw); ctx.closePath();
-    ctx.fillStyle=d.c; ctx.fill(); angle+=sw;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,angle,angle+sw);ctx.closePath();
+    ctx.fillStyle=d.c;ctx.fill();angle+=sw;
   });
-  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='#111928'; ctx.fill();
-  ctx.fillStyle='#dce8f5'; ctx.font='700 16px Syne'; ctx.textAlign='center';
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#0d1520';ctx.fill();
+  ctx.fillStyle='#e8f0f8';ctx.font='700 15px Space Grotesk';ctx.textAlign='center';
   ctx.fillText(total.toLocaleString(),cx,cy+4);
-  ctx.fillStyle='#5e7a96'; ctx.font='10px Outfit';
-  ctx.fillText('total',cx,cy+17);
-  document.getElementById('dlegend').innerHTML=sdata.map(d=>`
-    <div class="dleg-item">
-      <div class="dleg-dot" style="background:${d.c}"></div>
-      <span>${d.label}</span>
-      <span style="color:var(--muted);margin-left:auto;padding-left:8px">${d.v.toLocaleString()}</span>
-    </div>`).join('');
+  ctx.fillStyle='#4a6580';ctx.font='9px Space Grotesk';ctx.fillText('total',cx,cy+16);
+  document.getElementById(legId).innerHTML=sdata.map(d=>`
+    <div class="dleg-item"><div class="dleg-dot" style="background:${d.c}"></div><span>${d.label}</span><span style="color:var(--muted);margin-left:auto;padding-left:8px">${d.v.toLocaleString()}</span></div>`).join('');
 }
 
-// ═══════════════════════════════════════════════
-// WARD TABLE
-// ═══════════════════════════════════════════════
-function renderWardTable() {
-  const max=Math.max(...wardData.map(w=>w.total));
-  const rankC=['#f5a623','#5e7a96','#a78bfa'];
-  document.getElementById('wt-body').innerHTML=wardData.map((w,i)=>`
+function renderTable(tbodyId,data,isRoad){
+  const max=Math.max(...data.map(d=>d.total));
+  const rc=['#f5a623','#4a6580','#9b72f5'];
+  document.getElementById(tbodyId).innerHTML=data.map((d,i)=>`
     <tr>
-      <td><span class="rnk" style="background:${i<3?rankC[i]+'22':'rgba(255,255,255,.05)'};color:${i<3?rankC[i]:'#5e7a96'}">${i+1}</span></td>
-      <td style="font-weight:500;font-size:12px">${w.name}</td>
-      <td style="color:var(--accent);font-weight:700">${w.total}</td>
-      <td style="color:var(--accent2)">${w.crit}</td>
-      <td style="color:var(--green)">${w.res}</td>
-      <td><div class="mbar"><div class="mbar-f" style="width:${(w.total/max*100).toFixed(0)}%"></div></div></td>
-      <td style="font-size:11px;${w.chg>0?'color:var(--accent2)':'color:var(--green)'}">${w.chg>0?'▲ +'+w.chg:' ▼ '+Math.abs(w.chg)}%</td>
+      <td><span class="rnk" style="background:${i<3?rc[i]+'22':'rgba(255,255,255,.04)'};color:${i<3?rc[i]:'#4a6580'}">${i+1}</span></td>
+      <td style="font-weight:500;font-size:12px">${d.name}</td>
+      <td style="color:${isRoad?'var(--road)':'var(--waste)'};font-weight:700">${d.total}</td>
+      <td style="color:var(--road)">${d.crit}</td>
+      <td style="color:var(--green)">${d.res}</td>
+      <td><div class="mbar"><div class="mbar-f" style="width:${(d.total/max*100).toFixed(0)}%;background:${isRoad?'var(--road)':'var(--waste)'}"></div></div></td>
+      <td style="font-size:10px;${d.chg>0?'color:var(--road)':'color:var(--green)'}">${d.chg>0?'▲ +'+d.chg:' ▼ '+Math.abs(d.chg)}%</td>
     </tr>`).join('');
 }
 
-// ═══════════════════════════════════════════════
-// REPORT FORM
-// ═══════════════════════════════════════════════
-function setSev(s, btn) {
-  selSev = s;
-  document.querySelectorAll('.sev-btn').forEach(b=>{
-    b.className='sev-btn';
-  });
-  btn.className=`sev-btn sel-${s}`;
-  document.getElementById('f-sev').value=s;
-}
-function scrollToForm() {
-  document.getElementById('report-form-card').scrollIntoView({behavior:'smooth',block:'center'});
-  document.getElementById('f-ward').focus();
-  const btn=document.getElementById('report-btn');
-  btn.classList.add('pulse');
-  setTimeout(()=>btn.classList.remove('pulse'),600);
-}
-function resetForm() {
-  document.getElementById('form-success').style.display='none';
-  document.getElementById('form-fields').style.display='block';
-  ['f-name','f-ward','f-street','f-type','f-desc','f-phone'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.value='';
-  });
-  selSev='';
-  document.querySelectorAll('.sev-btn').forEach(b=>b.className='sev-btn');
-  document.getElementById('f-sev').value='';
-}
-
-function submitReport() {
-  const ward=document.getElementById('f-ward').value;
-  const street=document.getElementById('f-street').value.trim();
-  const type=document.getElementById('f-type').value;
-  const sev=document.getElementById('f-sev').value;
-  if(!ward||!street||!type||!sev){
-    showToast('⚠ Please fill in all required fields.','#f5a623');
-    return;
-  }
-  const desc=document.getElementById('f-desc').value.trim();
+// ══════════════════════════════════════════
+// SUBMIT FORMS
+// ══════════════════════════════════════════
+function submitWaste(){
+  const area=document.getElementById('wf-area').value;
+  const street=document.getElementById('wf-street').value.trim();
+  const type=document.getElementById('wf-type').value;
+  const sev=document.getElementById('wf-sev').value;
+  if(!area||!street||!type||!sev){showToast('⚠ Please fill all required fields','#f5a623');return;}
   const now=new Date();
-  const timeStr='Today '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  const wc=wardCoords[ward]||{x:350,y:200};
-  const jitter=()=>Math.round((Math.random()-.5)*30);
-  const newInc={
-    id:nextId++,
-    loc:`${ward} – ${street}`,
-    ward,type,sev,
-    status:'Active',
-    rpts:1,
-    time:timeStr,
-    x:wc.x+jitter(), y:wc.y+jitter(),
-    desc:desc||'No description provided.',
-  };
-  incidents.unshift(newInc);
-  // Update stat counters
-  const sc=document.getElementById('s-total');
-  const cur=parseInt(sc.textContent.replace(/,/g,''))||1247;
-  sc.textContent=(cur+1).toLocaleString(); sc.classList.add('flash');
-  setTimeout(()=>sc.classList.remove('flash'),400);
-  const cc=document.getElementById('s-comm');
-  const cc2=parseInt(cc.textContent.replace(/,/g,''))||384;
-  cc.textContent=(cc2+1).toLocaleString(); cc.classList.add('flash');
-  setTimeout(()=>cc.classList.remove('flash'),400);
-  const fc=document.getElementById('form-counter');
-  const fc2=parseInt(fc.textContent)||384;
-  fc.textContent=(fc2+1)+' submitted today';
-  // Update wastes
-  const wt=wasteTypes.find(w=>w.label===type);
-  if(wt) wt.v++;
-  renderWasteBars();
-  renderPins();
-  renderFeed(newInc.id);
-  document.getElementById('form-fields').style.display='none';
-  document.getElementById('form-success').style.display='block';
-  showToast('✅ Report submitted! Council notified.','#2ecc71');
+  const inc={id:nextId++,loc:`${area} – ${street}`,area,type,sev,status:'Active',rpts:1,
+    time:'Today '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    desc:document.getElementById('wf-desc').value||'No description.'};
+  wasteIncidents.unshift(inc);
+  wasteTypes.find(t=>t.l===type&&(t.v++));
+  flashStat('ws-total'); flashStat('ws-comm');
+  updateSidebarCounts();
+  renderMap('waste-map','waste-heat','waste-pins',wasteIncidents);
+  renderFeed('w-feed',wasteIncidents,'waste',inc.id);
+  renderBars('w-types',wasteTypes);
+  document.getElementById('waste-form-fields').style.display='none';
+  document.getElementById('waste-form-success').style.display='block';
+  showToast('✅ Waste report submitted! Council notified.','#00d97e');
+  sendToGoogleSheet(inc,'waste');
 }
 
-// ═══════════════════════════════════════════════
+function submitRoad(){
+  const area=document.getElementById('rf-area').value;
+  const road=document.getElementById('rf-road').value.trim();
+  const type=document.getElementById('rf-type').value;
+  const sev=document.getElementById('rf-sev').value;
+  if(!area||!road||!type||!sev){showToast('⚠ Please fill all required fields','#e85d75');return;}
+  const now=new Date();
+  const inc={id:nextId++,loc:`${area} – ${road}`,area,type,sev,status:'Active',rpts:1,
+    time:'Today '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    desc:document.getElementById('rf-desc').value||'No description.'};
+  roadIncidents.unshift(inc);
+  roadTypes.find(t=>{if(type.startsWith(t.l.split('—')[0].trim()))t.v++;});
+  flashStat('rs-total');flashStat('rs-comm');
+  updateSidebarCounts();
+  renderMap('road-map','road-heat','road-pins',roadIncidents);
+  renderFeed('r-feed',roadIncidents,'road',inc.id);
+  renderBars('r-types',roadTypes);
+  document.getElementById('road-form-fields').style.display='none';
+  document.getElementById('road-form-success').style.display='block';
+  showToast('🚧 Road report submitted! BCC Roads Dept notified.','#e85d75');
+  sendToGoogleSheet(inc,'road');
+}
+
+function resetWasteForm(){
+  ['wf-name','wf-area','wf-street','wf-type','wf-desc','wf-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  wSev='';document.getElementById('wf-sev').value='';
+  document.querySelectorAll('#waste-form-fields .sev-btn').forEach(b=>b.className='sev-btn');
+  document.getElementById('waste-form-success').style.display='none';
+  document.getElementById('waste-form-fields').style.display='block';
+}
+function resetRoadForm(){
+  ['rf-name','rf-area','rf-road','rf-type','rf-desc','rf-phone'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  rSev='';document.getElementById('rf-sev').value='';
+  document.querySelectorAll('#road-form-fields .sev-btn').forEach(b=>b.className='sev-btn');
+  document.getElementById('road-form-success').style.display='none';
+  document.getElementById('road-form-fields').style.display='block';
+}
+
+// ══════════════════════════════════════════
+// GOOGLE SHEET INTEGRATION
+// ══════════════════════════════════════════
+const SHEET_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'; // Replace after setup
+function sendToGoogleSheet(data,type){
+  if(SHEET_URL==='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE')return; // Skip if not configured
+  fetch(SHEET_URL,{method:'POST',body:JSON.stringify({...data,type})})
+    .then(()=>console.log('Saved to Google Sheets'))
+    .catch(e=>console.log('Sheet not configured yet:',e));
+}
+
+// ══════════════════════════════════════════
 // MODAL
-// ═══════════════════════════════════════════════
-function openModal(d) {
+// ══════════════════════════════════════════
+function openModal(d,kind){
   document.getElementById('mod-title').textContent=d.loc;
-  const bc=badgeCls(d.sev,d.status);
+  const isRoad=kind==='road';
   document.getElementById('mod-body').innerHTML=`
-    <div class="mr"><span class="mk">Status</span><span class="mv"><span class="fi-badge ${bc}" style="padding:3px 10px">${d.status}</span></span></div>
-    <div class="mr"><span class="mk">Severity</span><span class="mv">${sevLabel(d.sev)}</span></div>
-    <div class="mr"><span class="mk">Waste Type</span><span class="mv">${d.type}</span></div>
-    <div class="mr"><span class="mk">Ward</span><span class="mv">${d.ward}</span></div>
-    <div class="mr"><span class="mk">Reports Filed</span><span class="mv">${d.rpts}</span></div>
-    <div class="mr"><span class="mk">Last Reported</span><span class="mv">${d.time}</span></div>
-    <div class="mr" style="align-items:flex-start"><span class="mk">Notes</span><span class="mv">${d.desc}</span></div>
-    <button class="esc-btn" onclick="escalate('${d.loc.replace(/'/g,"\\'")}')">🚨 Escalate to Ward Councillor</button>
+    <div class="mr"><span class="mk">Status</span><span class="mv"><span class="${badgeCls(d.sev,d.status)}" style="padding:3px 10px">${badgeTxt(d.sev,d.status)}</span></span></div>
+    <div class="mr"><span class="mk">Type</span><span class="mv">${isRoad?'Road Damage':'Waste Dumping'}</span></div>
+    <div class="mr"><span class="mk">Issue</span><span class="mv">${d.type}</span></div>
+    <div class="mr"><span class="mk">Area</span><span class="mv">${d.area}</span></div>
+    <div class="mr"><span class="mk">Reports</span><span class="mv">${d.rpts}</span></div>
+    <div class="mr"><span class="mk">Reported</span><span class="mv">${d.time}</span></div>
+    <div class="mr" style="align-items:flex-start"><span class="mk">Notes</span><span class="mv" style="max-width:65%;text-align:right">${d.desc}</span></div>
+    <button class="esc-btn ${isRoad?'esc-road':'esc-waste'}" onclick="escalate('${d.loc.replace(/'/g,"\\'")}','${kind}')">${isRoad?'🚧 Escalate to BCC Roads Dept':'🗑 Escalate to Ward Councillor'}</button>
   `;
   document.getElementById('modal-ov').classList.add('open');
 }
 function closeMod(e){if(e.target===document.getElementById('modal-ov'))document.getElementById('modal-ov').classList.remove('open');}
-function escalate(loc){
+function escalate(loc,kind){
   document.getElementById('modal-ov').classList.remove('open');
-  showToast(`📨 Escalated: "${loc}" sent to Ward Councillor.`,'#4da6ff');
+  const msg=kind==='road'?`🚧 BCC Roads Dept notified: "${loc}"`:`🗑 Ward Councillor notified: "${loc}"`;
+  showToast(msg,kind==='road'?'#e85d75':'#f5a623');
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // TOOLTIP
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
 const tip=document.getElementById('tip');
 function showTip(e,t,r1,r2){
   document.getElementById('tip-t').textContent=t;
@@ -866,62 +1213,102 @@ function showTip(e,t,r1,r2){
   tip.classList.add('show');
   document.addEventListener('mousemove',moveTip);
 }
-function moveTip(e){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-18)+'px';}
+function moveTip(e){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-16)+'px';}
 function hideTip(){tip.classList.remove('show');document.removeEventListener('mousemove',moveTip);}
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // TOAST
-// ═══════════════════════════════════════════════
-function showToast(msg,color='#2ecc71'){
+// ══════════════════════════════════════════
+function showToast(msg,color='#00d97e'){
   const t=document.getElementById('toast');
-  document.getElementById('toast-dot').style.background=color;
-  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('t-dot').style.background=color;
+  document.getElementById('t-msg').textContent=msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
+  setTimeout(()=>t.classList.remove('show'),3800);
 }
 
-// ═══════════════════════════════════════════════
-// RIPPLE CSS
-// ═══════════════════════════════════════════════
-const s=document.createElement('style');
-s.textContent='@keyframes ripple2{0%{r:7;opacity:.4;stroke-width:2}100%{r:22;opacity:0;stroke-width:.5}}';
-document.head.appendChild(s);
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function flashStat(id){const el=document.getElementById(id);if(!el)return;const v=parseInt(el.textContent.replace(/,/g,''))||0;el.textContent=(v+1).toLocaleString();el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),400);}
 
-// ═══════════════════════════════════════════════
-// SIMULATE LIVE DATA (every 45s)
-// ═══════════════════════════════════════════════
-const liveWards=['Ward 1 – Makokoba','Ward 2 – Luveve','Ward 3 – Pumula','Ward 4 – Nkulumane','Ward 5 – Mpopoma','Ward 6 – Cowdray Park','City Centre'];
-const liveTypes=['Mixed Waste','Household Waste','Construction Debris','Plastic Waste','Organic Waste'];
-const liveStreets=['Main Street','5th Avenue','Railway Reserve','Near Market','Open Field','Dip Road','School Lane','Old Farm Road'];
+function updateSidebarCounts(){
+  document.getElementById('sb-waste-count').textContent=wasteIncidents.length.toLocaleString();
+  document.getElementById('sb-road-count').textContent=roadIncidents.length.toLocaleString();
+  document.getElementById('all-waste').textContent=wasteIncidents.length.toLocaleString();
+  document.getElementById('all-road').textContent=roadIncidents.length.toLocaleString();
+}
+
+function setYear(y,btn,mode){
+  btn.closest('.year-tabs').querySelectorAll('.yr-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function filterNeighbourhood(n){showToast(`Filtering: ${n}`,'#3b9eff');}
+
+function exportData(){
+  const rows=[['Type','Location','Area','Issue','Severity','Status','Reports','Time']];
+  wasteIncidents.forEach(d=>rows.push(['Waste',d.loc,d.area,d.type,d.sev,d.status,d.rpts,d.time]));
+  roadIncidents.forEach(d=>rows.push(['Road',d.loc,d.area,d.type,d.sev,d.status,d.rpts,d.time]));
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='bulawayo_city_watch_export.csv';a.click();
+  showToast('📥 CSV exported successfully','#00d97e');
+}
+
+function copyCode(){
+  navigator.clipboard.writeText(document.getElementById('apps-script-code').textContent);
+  showToast('📋 Code copied to clipboard','#00d97e');
+}
+
+// ══════════════════════════════════════════
+// LIVE SIMULATION (every 40s)
+// ══════════════════════════════════════════
+const liveAreas=Object.keys(NEIGH_COORDS).filter(k=>k!=='Other');
+const liveWTypes=['Mixed Waste','Household Waste','Plastic Waste','Organic / Food Waste','Construction Debris'];
+const liveRTypes=['Pothole — Large (>30cm)','Pothole — Dangerous / Deep','Road Crack / Subsidence','Missing Manhole Cover'];
+const liveStreets=['Main Road','5th Avenue','Near Market','School Lane','Old Farm Road','Railway Reserve','Church Road','Bypass'];
 const liveSevs=['medium','medium','high','high','critical'];
 function simulateLive(){
-  const ward=liveWards[Math.floor(Math.random()*liveWards.length)];
+  const isRoad=Math.random()>.5;
+  const area=liveAreas[Math.floor(Math.random()*liveAreas.length)];
   const street=liveStreets[Math.floor(Math.random()*liveStreets.length)];
-  const type=liveTypes[Math.floor(Math.random()*liveTypes.length)];
+  const type=isRoad?liveRTypes[Math.floor(Math.random()*liveRTypes.length)]:liveWTypes[Math.floor(Math.random()*liveWTypes.length)];
   const sev=liveSevs[Math.floor(Math.random()*liveSevs.length)];
-  const wc=wardCoords[ward]||{x:350,y:200};
-  const jitter=()=>Math.round((Math.random()-.5)*30);
   const now=new Date();
-  const t='Today '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  const inc={id:nextId++,loc:`${ward} – ${street}`,ward,type,sev,status:'Active',rpts:Math.ceil(Math.random()*5),time:t,x:wc.x+jitter(),y:wc.y+jitter(),desc:'Auto-detected via community reporting network.'};
-  incidents.unshift(inc);
-  const wt=wasteTypes.find(w=>w.label===type);
-  if(wt) wt.v++;
-  renderPins(); renderFeed(inc.id); renderWasteBars();
-  showToast(`🔴 New report: ${ward}`,sev==='critical'?'#ef5b5b':'#f5a623');
+  const inc={id:nextId++,loc:`${area} – ${street}`,area,type,sev,status:'Active',rpts:Math.ceil(Math.random()*6),
+    time:'Today '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    desc:'Auto-detected via community reporting network.'};
+  if(isRoad){roadIncidents.unshift(inc);renderFeed('r-feed',roadIncidents,'road',inc.id);renderMap('road-map','road-heat','road-pins',roadIncidents);}
+  else{wasteIncidents.unshift(inc);renderFeed('w-feed',wasteIncidents,'waste',inc.id);renderMap('waste-map','waste-heat','waste-pins',wasteIncidents);}
+  updateSidebarCounts();
+  showToast(`${isRoad?'🚧':'🗑'} New: ${area} – ${type.split('—')[0]}`,sev==='critical'?'#e85d75':'#f5a623');
 }
-setInterval(simulateLive, 45000);
+setInterval(simulateLive,40000);
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════
+// RIPPLE CSS
+// ══════════════════════════════════════════
+const s=document.createElement('style');
+s.textContent='@keyframes rp{0%{r:6;opacity:.4;stroke-width:2}100%{r:24;opacity:0;stroke-width:.5}}';
+document.head.appendChild(s);
+
+// ══════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════
-renderPins();
-renderFeed();
-renderWasteBars();
-renderDonut();
-renderWardTable();
-setTimeout(()=>renderTrend(2026),100);
-window.addEventListener('resize',()=>setTimeout(()=>renderTrend(curYear),60));
+// ══════════════════════════════════════════
+renderMap('waste-map','waste-heat','waste-pins',wasteIncidents);
+renderMap('road-map','road-heat','road-pins',roadIncidents);
+renderFeed('w-feed',wasteIncidents,'waste');
+renderFeed('r-feed',roadIncidents,'road');
+renderBars('w-types',wasteTypes);
+renderBars('r-types',roadTypes);
+renderDonut('w-donut','w-dleg',[{label:'Resolved',v:893,c:'#00d97e'},{label:'Active',v:302,c:'#e85d75'},{label:'Pending',v:52,c:'#f5a623'}]);
+renderDonut('r-donut','r-dleg',[{label:'Repaired',v:312,c:'#00d97e'},{label:'Active',v:331,c:'#e85d75'},{label:'Pending',v:41,c:'#f5a623'}]);
+renderTable('w-tbl',wasteNeighData,false);
+renderTable('r-tbl',roadNeighData,true);
+setTimeout(()=>{renderTrend('w-trend',wasteTrend,'#f5a623');renderTrend('r-trend',roadTrend,'#e85d75');},150);
+updateSidebarCounts();
 </script>
 </body>
 </html>
